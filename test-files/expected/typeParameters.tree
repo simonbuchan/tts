@@ -1,0 +1,315 @@
+Module @ 0-571 {
+  statements: [
+    Var @ 0-67 {
+      name: Identifier @ 4-9 = apply
+      typename: <none>
+      initializer: Function @ 12-67 {
+        name: <none>
+        type_parameters: [
+          TypeParameter @ 22-23 {
+            name: Identifier @ 22-23 = T
+          }
+          TypeParameter @ 24-25 {
+            name: Identifier @ 24-25 = U
+          }
+        ]
+        parameters: [
+          Parameter @ 27-41 {
+            name: Identifier @ 27-28 = f
+            typename: SignatureDeclaration @ 30-41 {
+              type_parameters: <none>
+              parameters: [
+                Parameter @ 31-35 {
+                  name: Identifier @ 31-32 = x
+                  typename: Identifier @ 34-35 = T
+                }
+              ]
+              typename: Identifier @ 40-41 = U
+            }
+          }
+          Parameter @ 43-47 {
+            name: Identifier @ 43-44 = x
+            typename: Identifier @ 46-47 = T
+          }
+        ]
+        typename: Identifier @ 50-51 = U
+        body: [
+          Return @ 54-65 {
+            expression: Call @ 61-65 {
+              expression: Identifier @ 61-62 = f
+              type_arguments: <none>
+              arguments: [
+                Identifier @ 63-64 = x
+              ]
+            }
+          }
+        ]
+      }
+    }
+    Var @ 68-173 {
+      name: Identifier @ 72-78 = apply2
+      typename: SignatureDeclaration @ 80-113 {
+        type_parameters: [
+          TypeParameter @ 81-82 {
+            name: Identifier @ 81-82 = T
+          }
+          TypeParameter @ 83-84 {
+            name: Identifier @ 83-84 = U
+          }
+        ]
+        parameters: [
+          Parameter @ 86-101 {
+            name: Identifier @ 86-88 = f2
+            typename: SignatureDeclaration @ 90-101 {
+              type_parameters: <none>
+              parameters: [
+                Parameter @ 91-95 {
+                  name: Identifier @ 91-92 = x
+                  typename: Identifier @ 94-95 = T
+                }
+              ]
+              typename: Identifier @ 100-101 = U
+            }
+          }
+          Parameter @ 103-107 {
+            name: Identifier @ 103-104 = x
+            typename: Identifier @ 106-107 = T
+          }
+        ]
+        typename: Identifier @ 112-113 = U
+      }
+      initializer: Function @ 116-173 {
+        name: <none>
+        type_parameters: [
+          TypeParameter @ 126-127 {
+            name: Identifier @ 126-127 = T
+          }
+          TypeParameter @ 128-129 {
+            name: Identifier @ 128-129 = U
+          }
+        ]
+        parameters: [
+          Parameter @ 131-146 {
+            name: Identifier @ 131-133 = f3
+            typename: SignatureDeclaration @ 135-146 {
+              type_parameters: <none>
+              parameters: [
+                Parameter @ 136-140 {
+                  name: Identifier @ 136-137 = x
+                  typename: Identifier @ 139-140 = T
+                }
+              ]
+              typename: Identifier @ 145-146 = U
+            }
+          }
+          Parameter @ 148-152 {
+            name: Identifier @ 148-149 = x
+            typename: Identifier @ 151-152 = T
+          }
+        ]
+        typename: Identifier @ 155-156 = U
+        body: [
+          Return @ 159-171 {
+            expression: Call @ 166-171 {
+              expression: Identifier @ 166-168 = f3
+              type_arguments: <none>
+              arguments: [
+                Identifier @ 169-170 = x
+              ]
+            }
+          }
+        ]
+      }
+    }
+    ExpressionStatement @ 174-233 {
+      expression: Call @ 174-233 {
+        expression: Identifier @ 174-179 = apply
+        type_arguments: [
+          Identifier @ 180-186 = number
+          Identifier @ 188-194 = number
+        ]
+        arguments: [
+          Function @ 196-229 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 206-215 {
+                name: Identifier @ 206-207 = n
+                typename: Identifier @ 209-215 = number
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 219-227 {
+                expression: Identifier @ 226-227 = n
+              }
+            ]
+          }
+          NumericLiteral @ 231-232 = 1
+        ]
+      }
+    }
+    ExpressionStatement @ 234-285 {
+      expression: Call @ 234-285 {
+        expression: Identifier @ 234-239 = apply
+        type_arguments: [
+          Identifier @ 240-246 = number
+        ]
+        arguments: [
+          Function @ 248-281 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 258-267 {
+                name: Identifier @ 258-259 = m
+                typename: Identifier @ 261-267 = number
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 271-279 {
+                expression: Identifier @ 278-279 = m
+              }
+            ]
+          }
+          NumericLiteral @ 283-284 = 2
+        ]
+      }
+    }
+    ExpressionStatement @ 286-358 {
+      expression: Call @ 286-358 {
+        expression: Identifier @ 286-291 = apply
+        type_arguments: [
+          Identifier @ 292-298 = number
+          Identifier @ 300-306 = number
+          Identifier @ 308-314 = number
+        ]
+        arguments: [
+          Function @ 316-349 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 326-335 {
+                name: Identifier @ 326-327 = l
+                typename: Identifier @ 329-335 = number
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 339-347 {
+                expression: Identifier @ 346-347 = l
+              }
+            ]
+          }
+          StringLiteral @ 351-357 = "oops"
+        ]
+      }
+    }
+    ExpressionStatement @ 359-418 {
+      expression: Call @ 359-418 {
+        expression: Identifier @ 359-364 = apply
+        type_arguments: [
+          Identifier @ 365-371 = string
+          Identifier @ 373-379 = string
+        ]
+        arguments: [
+          Function @ 381-414 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 391-400 {
+                name: Identifier @ 391-392 = k
+                typename: Identifier @ 394-400 = number
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 404-412 {
+                expression: Identifier @ 411-412 = k
+              }
+            ]
+          }
+          NumericLiteral @ 416-417 = 4
+        ]
+      }
+    }
+    ExpressionStatement @ 419-481 {
+      expression: Call @ 419-481 {
+        expression: Identifier @ 419-424 = apply
+        type_arguments: [
+          Identifier @ 425-431 = string
+          Identifier @ 433-439 = number
+        ]
+        arguments: [
+          Function @ 441-474 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 451-460 {
+                name: Identifier @ 451-452 = j
+                typename: Identifier @ 454-460 = number
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 464-472 {
+                expression: Identifier @ 471-472 = j
+              }
+            ]
+          }
+          StringLiteral @ 476-480 = "ok"
+        ]
+      }
+    }
+    ExpressionStatement @ 482-525 {
+      expression: Call @ 482-525 {
+        expression: Identifier @ 482-487 = apply
+        type_arguments: <none>
+        arguments: [
+          Function @ 488-521 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 498-507 {
+                name: Identifier @ 498-499 = i
+                typename: Identifier @ 501-507 = number
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 511-519 {
+                expression: Identifier @ 518-519 = i
+              }
+            ]
+          }
+          NumericLiteral @ 523-524 = 5
+        ]
+      }
+    }
+    ExpressionStatement @ 526-571 {
+      expression: Call @ 526-571 {
+        expression: Identifier @ 526-531 = apply
+        type_arguments: <none>
+        arguments: [
+          Function @ 532-565 {
+            name: <none>
+            type_parameters: <none>
+            parameters: [
+              Parameter @ 542-551 {
+                name: Identifier @ 542-543 = s
+                typename: Identifier @ 545-551 = string
+              }
+            ]
+            typename: <none>
+            body: [
+              Return @ 555-563 {
+                expression: Identifier @ 562-563 = s
+              }
+            ]
+          }
+          StringLiteral @ 567-570 = "a"
+        ]
+      }
+    }
+  ]
+}

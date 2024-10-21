@@ -1,0 +1,12 @@
+callExpression:9:3: error: expected argument of type String, but got Number
+   9 | f(1)
+     |   ^
+callExpression:10:1: error: cannot call expression of type Number
+  10 | n(1)
+     | ^^^^
+callExpression:11:1: error: expected 1 arguments, but got 0
+  11 | f()
+     | ^^^
+callExpression:12:1: error: expected 1 arguments, but got 2
+  12 | f("first", "second")
+     | ^^^^^^^^^^^^^^^^^^^^

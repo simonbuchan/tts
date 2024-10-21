@@ -1,0 +1,7 @@
+Module @ 0-7 {
+  statements: [
+    ExpressionStatement @ 0-7 {
+      expression: StringLiteral @ 0-7 = "hello"
+    }
+  ]
+}

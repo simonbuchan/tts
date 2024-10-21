@@ -1,0 +1,15 @@
+Module @ 0-56 {
+  statements: [
+    Var @ 0-29 {
+      name: Identifier @ 4-25 = arthurTwoShedsJackson
+      typename: <none>
+      initializer: NumericLiteral @ 28-29 = 1
+    }
+    ExpressionStatement @ 31-56 {
+      expression: Assignment @ 31-56 {
+        name: Identifier @ 31-52 = arthurTwoShedsJackson
+        value: NumericLiteral @ 55-56 = 2
+      }
+    }
+  ]
+}

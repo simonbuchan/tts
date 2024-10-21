@@ -1,0 +1,9 @@
+Module @ 0-17 {
+  statements: [
+    Var @ 0-17 {
+      name: Identifier @ 4-5 = s
+      typename: Identifier @ 7-13 = string
+      initializer: NumericLiteral @ 16-17 = 1
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+Module @ 0-192 {
+  statements: [
+    TypeAlias @ 0-17 {
+      name: Identifier @ 5-8 = Nat
+      typename: Identifier @ 11-17 = number
+    }
+    Var @ 19-31 {
+      name: Identifier @ 23-26 = Nat
+      typename: <none>
+      initializer: NumericLiteral @ 29-31 = 12
+    }
+    Var @ 33-50 {
+      name: Identifier @ 37-40 = nat
+      typename: Identifier @ 42-45 = Nat
+      initializer: NumericLiteral @ 48-50 = 13
+    }
+    TypeAlias @ 53-70 {
+      name: Identifier @ 58-61 = Not
+      typename: Identifier @ 64-70 = string
+    }
+    TypeAlias @ 72-89 {
+      name: Identifier @ 77-80 = Not
+      typename: Identifier @ 83-89 = number
+    }
+    TypeAlias @ 91-105 {
+      name: Identifier @ 96-99 = Nit
+      typename: Identifier @ 102-105 = Not
+    }
+    Var @ 107-124 {
+      name: Identifier @ 111-114 = nit
+      typename: Identifier @ 116-119 = Not
+      initializer: NumericLiteral @ 122-124 = 14
+    }
+    Var @ 127-139 {
+      name: Identifier @ 131-134 = Nut
+      typename: <none>
+      initializer: NumericLiteral @ 137-139 = 15
+    }
+    Var @ 141-158 {
+      name: Identifier @ 145-148 = nut
+      typename: Identifier @ 150-153 = Nut
+      initializer: NumericLiteral @ 156-158 = 16
+    }
+    TypeAlias @ 160-177 {
+      name: Identifier @ 165-168 = Net
+      typename: Identifier @ 171-177 = number
+    }
+    Var @ 179-192 {
+      name: Identifier @ 183-186 = net
+      typename: <none>
+      initializer: Identifier @ 189-192 = Net
+    }
+  ]
+}

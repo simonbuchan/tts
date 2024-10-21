@@ -1,0 +1,9 @@
+objectLiteral:4:1: error: cannot assign Def(#6) to value of type Def(#5)
+   4 | o = { x: 4 }
+     | ^^^^^^^^^^^^
+objectLiteral:5:1: error: cannot assign Def(#8) to value of type Def(#7)
+   5 | o = { x: 5, z: "hiiii" }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+objectLiteral:6:1: error: cannot assign Def(#10) to value of type Def(#9)
+   6 | o = { k: "byeeee" }
+     | ^^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,9 @@
+Module @ 0-25 {
+  statements: [
+    Var @ 0-25 {
+      name: Identifier @ 4-21 = singleDeclaration
+      typename: <none>
+      initializer: NumericLiteral @ 24-25 = 1
+    }
+  ]
+}

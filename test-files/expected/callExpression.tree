@@ -1,0 +1,85 @@
+Module @ 0-152 {
+  statements: [
+    Var @ 0-9 {
+      name: Identifier @ 4-5 = n
+      typename: <none>
+      initializer: NumericLiteral @ 8-9 = 1
+    }
+    Var @ 11-101 {
+      name: Identifier @ 15-16 = f
+      typename: <none>
+      initializer: Function @ 19-101 {
+        name: <none>
+        type_parameters: <none>
+        parameters: [
+          Parameter @ 29-38 {
+            name: Identifier @ 29-30 = x
+            typename: Identifier @ 32-38 = string
+          }
+        ]
+        typename: <none>
+        body: [
+          Return @ 47-98 {
+            expression: Object @ 54-98 {
+              properties: [
+                PropertyInitializer @ 65-73 {
+                  name: Identifier @ 65-70 = first
+                  initializer: Identifier @ 72-73 = x
+                }
+                PropertyInitializer @ 84-91 {
+                  name: Identifier @ 84-88 = last
+                  initializer: Identifier @ 90-91 = n
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+    ExpressionStatement @ 103-113 {
+      expression: Call @ 103-113 {
+        expression: Identifier @ 103-104 = f
+        type_arguments: <none>
+        arguments: [
+          StringLiteral @ 105-112 = "first"
+        ]
+      }
+    }
+    ExpressionStatement @ 115-119 {
+      expression: Call @ 115-119 {
+        expression: Identifier @ 115-116 = f
+        type_arguments: <none>
+        arguments: [
+          NumericLiteral @ 117-118 = 1
+        ]
+      }
+    }
+    ExpressionStatement @ 121-125 {
+      expression: Call @ 121-125 {
+        expression: Identifier @ 121-122 = n
+        type_arguments: <none>
+        arguments: [
+          NumericLiteral @ 123-124 = 1
+        ]
+      }
+    }
+    ExpressionStatement @ 127-130 {
+      expression: Call @ 127-130 {
+        expression: Identifier @ 127-128 = f
+        type_arguments: <none>
+        arguments: [
+        ]
+      }
+    }
+    ExpressionStatement @ 132-152 {
+      expression: Call @ 132-152 {
+        expression: Identifier @ 132-133 = f
+        type_arguments: <none>
+        arguments: [
+          StringLiteral @ 134-141 = "first"
+          StringLiteral @ 143-151 = "second"
+        ]
+      }
+    }
+  ]
+}
