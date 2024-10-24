@@ -1,7 +1,7 @@
-Module @ 0-7 {
+Module @ 1:1-1:8 (0-7) {
   statements: [
-    ExpressionStatement @ 0-7 {
-      expression: StringLiteral @ 0-7 = "hello"
+    ExpressionStatement @ 1:1-1:8 (0-7) {
+      expression: StringLiteral @ 1:1-1:8 (0-7) = "hello"
     }
   ]
 }

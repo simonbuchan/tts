@@ -1,8 +1,8 @@
+use super::*;
+use crate::check::TypeDef;
 use std::fs;
 use std::io;
 use std::path::Path;
-
-use super::*;
 
 // fixme: test per input
 // will need to move output to test-files/output/{name}/{tree|errors}
@@ -46,14 +46,20 @@ fn baseline() -> io::Result<()> {
             output_dir.join(format!("{name}.tree")),
             format!(
                 "{}",
-                syntax::TreeWriter::new(&result.syntax, result.module.0)
+                syntax::TreeWriter::new(&source, &result.syntax, result.module.0)
             ),
         )?;
 
         if !result.reports.is_empty() {
             let output_path = output_dir.join(format!("{name}.errors"));
             let mut output = String::new();
-            let mut f = diag::ReportFormatter::new(&mut output, &source);
+            let mut f = diag::ReportFormatter::new(
+                &mut output,
+                diag::Context {
+                    result: &result,
+                    source: &source,
+                },
+            );
             for report in &result.reports {
                 f.write(report).unwrap();
             }

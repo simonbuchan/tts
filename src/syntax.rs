@@ -1,5 +1,5 @@
 use crate::list::{Id, List};
-use crate::source::{SourcePos, SourceSpan};
+use crate::source::{Source, SourcePos, SourceSpan};
 
 #[derive(Clone, Debug)]
 pub struct Syntax {
@@ -297,15 +297,17 @@ pub struct ModuleData {
 
 // Should use a visitor or something?
 // Or could simply dump the flat syntax list, though it would be ugly!
-pub struct TreeWriter<'syntax> {
+pub struct TreeWriter<'source, 'syntax> {
+    source: &'source Source,
     list: &'syntax SyntaxList,
     id: Id<Syntax>,
     indent: usize,
 }
 
-impl<'syntax> TreeWriter<'syntax> {
-    pub fn new(list: &'syntax SyntaxList, id: Id<Syntax>) -> Self {
+impl<'source, 'syntax> TreeWriter<'source, 'syntax> {
+    pub fn new(source: &'source Source, list: &'syntax SyntaxList, id: Id<Syntax>) -> Self {
         Self {
+            source,
             list,
             id,
             indent: 0,
@@ -345,7 +347,7 @@ impl FmtData<'_, '_> {
     fn field_nested(
         &mut self,
         name: &str,
-        parent: &TreeWriter<'_>,
+        parent: &TreeWriter<'_, '_>,
         id: Id<Syntax>,
     ) -> std::fmt::Result {
         self.field_name(name)?;
@@ -355,7 +357,7 @@ impl FmtData<'_, '_> {
     fn field_try_nested(
         &mut self,
         name: &str,
-        parent: &TreeWriter<'_>,
+        parent: &TreeWriter<'_, '_>,
         id: Option<Id<Syntax>>,
     ) -> std::fmt::Result {
         self.field_name(name)?;
@@ -369,7 +371,7 @@ impl FmtData<'_, '_> {
     fn field_opt_try_nested(
         &mut self,
         name: &str,
-        parent: &TreeWriter<'_>,
+        parent: &TreeWriter<'_, '_>,
         id: Option<Option<Id<Syntax>>>,
     ) -> std::fmt::Result {
         self.field_name(name)?;
@@ -409,14 +411,18 @@ impl FmtData<'_, '_> {
 
     fn array_item_try_nested(
         &mut self,
-        parent: &TreeWriter<'_>,
+        parent: &TreeWriter<'_, '_>,
         id: Option<Id<Syntax>>,
     ) -> std::fmt::Result {
         self.array_item()?;
         self.value_try_nested(parent, id)
     }
 
-    fn array_item_nested(&mut self, parent: &TreeWriter<'_>, id: Id<Syntax>) -> std::fmt::Result {
+    fn array_item_nested(
+        &mut self,
+        parent: &TreeWriter<'_, '_>,
+        id: Id<Syntax>,
+    ) -> std::fmt::Result {
         self.array_item()?;
         self.value_nested(parent, id)
     }
@@ -429,7 +435,7 @@ impl FmtData<'_, '_> {
 
     fn value_try_nested(
         &mut self,
-        parent: &TreeWriter<'_>,
+        parent: &TreeWriter<'_, '_>,
         id: Option<Id<Syntax>>,
     ) -> std::fmt::Result {
         if let Some(id) = id {
@@ -439,8 +445,9 @@ impl FmtData<'_, '_> {
         }
     }
 
-    fn value_nested(&mut self, parent: &TreeWriter<'_>, id: Id<Syntax>) -> std::fmt::Result {
+    fn value_nested(&mut self, parent: &TreeWriter<'_, '_>, id: Id<Syntax>) -> std::fmt::Result {
         let child = TreeWriter {
+            source: parent.source,
             list: parent.list,
             id,
             indent: self.indent,
@@ -457,13 +464,18 @@ fn indent(count: usize, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     Ok(())
 }
 
-impl std::fmt::Display for TreeWriter<'_> {
+impl std::fmt::Display for TreeWriter<'_, '_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let syntax = &self.list[self.id];
+
+        let start_loc = self.source.line_col(syntax.span.start);
+        let end_loc = self.source.line_col(syntax.span.end);
         write!(
             f,
-            "{:?} @ {}-{}",
+            "{:?} @ {}-{} ({}-{})",
             syntax.data.kind(),
+            start_loc,
+            end_loc,
             syntax.span.start.0,
             syntax.span.end.0,
         )?;

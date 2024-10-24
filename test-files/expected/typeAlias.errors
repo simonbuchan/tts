@@ -4,6 +4,6 @@ typeAlias:6:1: error: already declared: Not
   typeAlias:5:1: note: first declared here
      5 | type Not = string;
        | ^^^^^^^^^^^^^^^^^
-typeAlias:13:11: error: could not resolve "Net" as Value
+typeAlias:13:11: error: could not resolve Net as Value
   13 | var net = Net
      |           ^^^

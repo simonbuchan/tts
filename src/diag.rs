@@ -1,6 +1,9 @@
-use crate::bind::Meaning;
-use crate::check::TypeId;
+use crate::bind::{Meaning, Symbol};
+use crate::check::{TypeDef, TypeId};
+use crate::list::Id;
 use crate::source::{Source, SourceSpan};
+use crate::syntax::*;
+use crate::CompileResult;
 use colorful::Color;
 use std::fmt::{self, Write as _};
 
@@ -41,7 +44,7 @@ impl<'out> Reporter<'out> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Report {
     pub kind: ReportKind,
     pub span: SourceSpan,
@@ -83,7 +86,7 @@ impl fmt::Display for ReportKind {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Message {
     // Lexer (forwarded by parser for TokenKind::Error*)
     /// `"unclosed string"`
@@ -151,7 +154,17 @@ impl<W: fmt::Write> fmt::Write for IndentWrite<W> {
 }
 
 pub struct Context<'a> {
-    source: &'a Source,
+    pub result: &'a CompileResult,
+    pub source: &'a Source,
+}
+
+impl<'a> Context<'a> {
+    fn wrap<T>(&self, value: T) -> WithContext<'_, 'a, T> {
+        WithContext {
+            context: self,
+            value,
+        }
+    }
 }
 
 pub struct ReportFormatter<'a> {
@@ -160,14 +173,14 @@ pub struct ReportFormatter<'a> {
 }
 
 impl<'a> ReportFormatter<'a> {
-    pub fn new(write: &'a mut dyn fmt::Write, source: &'a Source) -> Self {
+    pub fn new(write: &'a mut dyn fmt::Write, context: Context<'a>) -> Self {
         Self {
             write: IndentWrite {
                 write,
                 indent: 0,
                 at_line_start: true,
             },
-            context: Context { source },
+            context,
         }
     }
 }
@@ -180,7 +193,7 @@ impl ReportFormatter<'_> {
             "{filename}:{start_loc}: {kind}: {message}",
             filename = self.context.source.name,
             kind = report.kind,
-            message = WithContext(&self.context, &report.message),
+            message = self.context.wrap(&report.message)
         )?;
         let start_line_span = self.context.source.line_span(report.span.start);
         writeln!(
@@ -234,11 +247,23 @@ impl ReportFormatter<'_> {
     }
 }
 
-struct WithContext<'a, 'b, T>(&'b Context<'a>, T);
+struct WithContext<'a, 'b, T> {
+    context: &'b Context<'a>,
+    value: T,
+}
+
+impl<'a, 'b, T> WithContext<'a, 'b, T> {
+    fn map<U>(&self, value: U) -> WithContext<'a, 'b, U> {
+        WithContext {
+            context: self.context,
+            value,
+        }
+    }
+}
 
 impl fmt::Display for WithContext<'_, '_, &Message> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.1 {
+        match self.value {
             // Lexer
             Message::UnknownChar => write!(f, "unknown char"),
             Message::UnclosedString => write!(f, "unclosed string"),
@@ -253,23 +278,33 @@ impl fmt::Display for WithContext<'_, '_, &Message> {
 
             // Checker
             Message::Assign { left, right } => {
-                write!(f, "cannot assign {right:?} to value of type {left:?}")
+                write!(
+                    f,
+                    "cannot assign `{right}` to value of type `{left}`",
+                    left = self.map(*left),
+                    right = self.map(*right),
+                )
             }
             Message::Call { ty } => {
-                write!(f, "cannot call expression of type {ty:?}")
+                write!(
+                    f,
+                    "cannot call expression of type `{ty}`",
+                    ty = self.map(*ty)
+                )
             }
             Message::ReturnType {
                 declared_type,
                 return_type,
             } => {
-                // todo: resolve types
                 write!(
                     f,
-                    "declared type {declared_type:?} does not match returned type {return_type:?}"
+                    "declared type `{declared_type}` does not match returned type `{return_type}`",
+                    declared_type = self.map(*declared_type),
+                    return_type = self.map(*return_type),
                 )
             }
             Message::Resolve { name, meaning } => {
-                write!(f, "could not resolve {name:?} as {meaning:?}")
+                write!(f, "could not resolve {name} as {meaning:?}",)
             }
             Message::ArgumentCount {
                 parameter_count,
@@ -286,9 +321,126 @@ impl fmt::Display for WithContext<'_, '_, &Message> {
             } => {
                 write!(
                     f,
-                    "expected argument of type {parameter_type:?}, but got {argument_type:?}"
+                    "expected argument of type `{parameter_type}`, but got `{argument_type}`",
+                    parameter_type = self.map(*parameter_type),
+                    argument_type = self.map(*argument_type),
                 )
             }
+        }
+    }
+}
+
+impl<'a, 'b, T> fmt::Display for WithContext<'a, 'b, Option<T>>
+where
+    WithContext<'a, 'b, T>: fmt::Display,
+    T: Copy,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.value {
+            None => write!(f, "<none>"),
+            Some(ty) => write!(f, "{}", self.map(ty)),
+        }
+    }
+}
+
+impl fmt::Display for WithContext<'_, '_, Id<Symbol>> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let symbol = &self.context.result.bindings.symbols[self.value];
+        // assume any declaration works
+        let syntax = symbol.declarations[0].syntax;
+        write!(f, "{}", self.map(syntax))
+    }
+}
+
+impl fmt::Display for WithContext<'_, '_, Id<Syntax>> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.context.result.syntax[self.value].data {
+            SyntaxData::TypeParameter(TypeParameterData { name }) => {
+                write!(f, "{}", self.map(name.0))
+            }
+            SyntaxData::Parameter(ParameterData { name, typename }) => {
+                write!(
+                    f,
+                    "{}: {}",
+                    self.map(name.0),
+                    self.map(typename.map(|t| t.id()))
+                )
+            }
+            SyntaxData::PropertyDeclaration(PropertyDeclarationData { name, typename }) => {
+                write!(
+                    f,
+                    "{}: {}",
+                    self.map(name.0),
+                    self.map(typename.map(|t| t.id()))
+                )
+            }
+            SyntaxData::Identifier(Some(text)) => {
+                write!(f, "{}", text)
+            }
+            SyntaxData::Identifier(None) => {
+                write!(f, "<error>")
+            }
+            data => {
+                write!(f, "{:?}", data)
+            }
+        }
+    }
+}
+
+impl fmt::Display for WithContext<'_, '_, TypeId> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.value {
+            TypeId::Error => write!(f, "<error>"),
+            TypeId::Void => write!(f, "void"),
+            TypeId::Any => write!(f, "any"),
+            TypeId::Number => write!(f, "number"),
+            TypeId::String => write!(f, "string"),
+            TypeId::Def(id) => match &self.context.result.check.type_defs[id] {
+                TypeDef::Object(def) => {
+                    if def.members.0.is_empty() {
+                        write!(f, "{{}}")?;
+                    } else {
+                        write!(f, "{{ ")?;
+                        for (index, (name, member)) in def.members.0.iter().enumerate() {
+                            if index != 0 {
+                                write!(f, ", ")?;
+                            }
+
+                            write!(f, "{}: {}", name, self.map(member.ty))?;
+                        }
+                        write!(f, " }}")?;
+                    }
+                    Ok(())
+                }
+                TypeDef::Function(def) => {
+                    if let Some(ps) = &def.type_parameters {
+                        write!(f, "<")?;
+                        for (index, p) in ps.iter().copied().enumerate() {
+                            if index != 0 {
+                                write!(f, ", ")?;
+                            }
+                            write!(f, "{}", self.map(p))?;
+                        }
+                        write!(f, ">")?;
+                    }
+                    write!(f, "(")?;
+                    for (index, p) in def.parameters.iter().copied().enumerate() {
+                        if index != 0 {
+                            write!(f, ", ")?;
+                        }
+                        write!(f, "{}", self.map(p))?;
+                    }
+                    write!(f, ") -> {}", self.map(def.return_type))?;
+                    Ok(())
+                }
+                TypeDef::TypeVariable { name } => {
+                    if let Some(text) = &self.context.result.syntax[*name] {
+                        write!(f, "{text}")
+                    } else {
+                        write!(f, "<error>")
+                    }
+                }
+            },
         }
     }
 }

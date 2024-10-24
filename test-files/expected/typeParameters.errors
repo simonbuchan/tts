@@ -1,12 +1,12 @@
-typeParameters:8:7: error: expected argument of type Def(#2), but got Def(#8)
+typeParameters:8:7: error: expected argument of type `(x: T) -> U`, but got `(i: number) -> number`
    8 | apply(function (i: number) { return i }, 5)
      |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-typeParameters:1:47: error: could not resolve "T" as Type
+typeParameters:1:47: error: could not resolve T as Type
    1 | var apply = function <T,U>(f: (x: T) => U, x: T): U { return f(x) }
      |                                               ^
-typeParameters:9:7: error: expected argument of type Def(#2), but got Def(#9)
+typeParameters:9:7: error: expected argument of type `(x: T) -> U`, but got `(s: string) -> string`
    9 | apply(function (s: string) { return s }, "a")
      |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-typeParameters:1:47: error: could not resolve "T" as Type
+typeParameters:1:47: error: could not resolve T as Type
    1 | var apply = function <T,U>(f: (x: T) => U, x: T): U { return f(x) }
      |                                               ^

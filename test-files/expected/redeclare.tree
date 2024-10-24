@@ -1,14 +1,14 @@
-Module @ 0-20 {
+Module @ 1:1-2:10 (0-20) {
   statements: [
-    Var @ 0-9 {
-      name: Identifier @ 4-5 = x
+    Var @ 1:1-1:10 (0-9) {
+      name: Identifier @ 1:5-1:6 (4-5) = x
       typename: <none>
-      initializer: NumericLiteral @ 8-9 = 1
+      initializer: NumericLiteral @ 1:9-1:10 (8-9) = 1
     }
-    Var @ 11-20 {
-      name: Identifier @ 15-16 = x
+    Var @ 2:1-2:10 (11-20) {
+      name: Identifier @ 2:5-2:6 (15-16) = x
       typename: <none>
-      initializer: NumericLiteral @ 19-20 = 2
+      initializer: NumericLiteral @ 2:9-2:10 (19-20) = 2
     }
   ]
 }

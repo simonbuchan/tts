@@ -1,14 +1,14 @@
-Module @ 0-56 {
+Module @ 1:1-2:26 (0-56) {
   statements: [
-    Var @ 0-29 {
-      name: Identifier @ 4-25 = arthurTwoShedsJackson
+    Var @ 1:1-1:30 (0-29) {
+      name: Identifier @ 1:5-1:26 (4-25) = arthurTwoShedsJackson
       typename: <none>
-      initializer: NumericLiteral @ 28-29 = 1
+      initializer: NumericLiteral @ 1:29-1:30 (28-29) = 1
     }
-    ExpressionStatement @ 31-56 {
-      expression: Assignment @ 31-56 {
-        name: Identifier @ 31-52 = arthurTwoShedsJackson
-        value: NumericLiteral @ 55-56 = 2
+    ExpressionStatement @ 2:1-2:26 (31-56) {
+      expression: Assignment @ 2:1-2:26 (31-56) {
+        name: Identifier @ 2:1-2:22 (31-52) = arthurTwoShedsJackson
+        value: NumericLiteral @ 2:25-2:26 (55-56) = 2
       }
     }
   ]

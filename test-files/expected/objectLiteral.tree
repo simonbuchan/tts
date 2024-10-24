@@ -1,229 +1,229 @@
-Module @ 0-699 {
+Module @ 1:1-28:5 (0-699) {
   statements: [
-    Var @ 0-29 {
-      name: Identifier @ 4-5 = o
+    Var @ 1:1-1:30 (0-29) {
+      name: Identifier @ 1:5-1:6 (4-5) = o
       typename: <none>
-      initializer: Object @ 8-29 {
+      initializer: Object @ 1:9-1:30 (8-29) {
         properties: [
-          PropertyInitializer @ 10-14 {
-            name: Identifier @ 10-11 = x
-            initializer: NumericLiteral @ 13-14 = 1
+          PropertyInitializer @ 1:11-1:15 (10-14) {
+            name: Identifier @ 1:11-1:12 (10-11) = x
+            initializer: NumericLiteral @ 1:14-1:15 (13-14) = 1
           }
-          PropertyInitializer @ 16-27 {
-            name: Identifier @ 16-17 = y
-            initializer: StringLiteral @ 19-27 = "string"
+          PropertyInitializer @ 1:17-1:28 (16-27) {
+            name: Identifier @ 1:17-1:18 (16-17) = y
+            initializer: StringLiteral @ 1:20-1:28 (19-27) = "string"
           }
         ]
       }
     }
-    ExpressionStatement @ 31-56 {
-      expression: Assignment @ 31-56 {
-        name: Identifier @ 31-32 = o
-        value: Object @ 35-56 {
+    ExpressionStatement @ 2:1-2:26 (31-56) {
+      expression: Assignment @ 2:1-2:26 (31-56) {
+        name: Identifier @ 2:1-2:2 (31-32) = o
+        value: Object @ 2:5-2:26 (35-56) {
           properties: [
-            PropertyInitializer @ 37-41 {
-              name: Identifier @ 37-38 = x
-              initializer: NumericLiteral @ 40-41 = 2
+            PropertyInitializer @ 2:7-2:11 (37-41) {
+              name: Identifier @ 2:7-2:8 (37-38) = x
+              initializer: NumericLiteral @ 2:10-2:11 (40-41) = 2
             }
-            PropertyInitializer @ 43-54 {
-              name: Identifier @ 43-44 = y
-              initializer: StringLiteral @ 46-54 = "string"
+            PropertyInitializer @ 2:13-2:24 (43-54) {
+              name: Identifier @ 2:13-2:14 (43-44) = y
+              initializer: StringLiteral @ 2:16-2:24 (46-54) = "string"
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 58-97 {
-      expression: Assignment @ 58-97 {
-        name: Identifier @ 58-59 = o
-        value: Object @ 62-97 {
+    ExpressionStatement @ 3:1-3:40 (58-97) {
+      expression: Assignment @ 3:1-3:40 (58-97) {
+        name: Identifier @ 3:1-3:2 (58-59) = o
+        value: Object @ 3:5-3:40 (62-97) {
           properties: [
-            PropertyInitializer @ 64-68 {
-              name: Identifier @ 64-65 = x
-              initializer: NumericLiteral @ 67-68 = 3
+            PropertyInitializer @ 3:7-3:11 (64-68) {
+              name: Identifier @ 3:7-3:8 (64-65) = x
+              initializer: NumericLiteral @ 3:10-3:11 (67-68) = 3
             }
-            PropertyInitializer @ 70-81 {
-              name: Identifier @ 70-71 = y
-              initializer: StringLiteral @ 73-81 = "string"
+            PropertyInitializer @ 3:13-3:24 (70-81) {
+              name: Identifier @ 3:13-3:14 (70-71) = y
+              initializer: StringLiteral @ 3:16-3:24 (73-81) = "string"
             }
-            PropertyInitializer @ 83-95 {
-              name: Identifier @ 83-88 = extra
-              initializer: StringLiteral @ 90-95 = "yep"
+            PropertyInitializer @ 3:26-3:38 (83-95) {
+              name: Identifier @ 3:26-3:31 (83-88) = extra
+              initializer: StringLiteral @ 3:33-3:38 (90-95) = "yep"
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 99-111 {
-      expression: Assignment @ 99-111 {
-        name: Identifier @ 99-100 = o
-        value: Object @ 103-111 {
+    ExpressionStatement @ 4:1-4:13 (99-111) {
+      expression: Assignment @ 4:1-4:13 (99-111) {
+        name: Identifier @ 4:1-4:2 (99-100) = o
+        value: Object @ 4:5-4:13 (103-111) {
           properties: [
-            PropertyInitializer @ 105-109 {
-              name: Identifier @ 105-106 = x
-              initializer: NumericLiteral @ 108-109 = 4
+            PropertyInitializer @ 4:7-4:11 (105-109) {
+              name: Identifier @ 4:7-4:8 (105-106) = x
+              initializer: NumericLiteral @ 4:10-4:11 (108-109) = 4
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 113-137 {
-      expression: Assignment @ 113-137 {
-        name: Identifier @ 113-114 = o
-        value: Object @ 117-137 {
+    ExpressionStatement @ 5:1-5:25 (113-137) {
+      expression: Assignment @ 5:1-5:25 (113-137) {
+        name: Identifier @ 5:1-5:2 (113-114) = o
+        value: Object @ 5:5-5:25 (117-137) {
           properties: [
-            PropertyInitializer @ 119-123 {
-              name: Identifier @ 119-120 = x
-              initializer: NumericLiteral @ 122-123 = 5
+            PropertyInitializer @ 5:7-5:11 (119-123) {
+              name: Identifier @ 5:7-5:8 (119-120) = x
+              initializer: NumericLiteral @ 5:10-5:11 (122-123) = 5
             }
-            PropertyInitializer @ 125-135 {
-              name: Identifier @ 125-126 = z
-              initializer: StringLiteral @ 128-135 = "hiiii"
+            PropertyInitializer @ 5:13-5:23 (125-135) {
+              name: Identifier @ 5:13-5:14 (125-126) = z
+              initializer: StringLiteral @ 5:16-5:23 (128-135) = "hiiii"
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 139-158 {
-      expression: Assignment @ 139-158 {
-        name: Identifier @ 139-140 = o
-        value: Object @ 143-158 {
+    ExpressionStatement @ 6:1-6:20 (139-158) {
+      expression: Assignment @ 6:1-6:20 (139-158) {
+        name: Identifier @ 6:1-6:2 (139-140) = o
+        value: Object @ 6:5-6:20 (143-158) {
           properties: [
-            PropertyInitializer @ 145-156 {
-              name: Identifier @ 145-146 = k
-              initializer: StringLiteral @ 148-156 = "byeeee"
+            PropertyInitializer @ 6:7-6:18 (145-156) {
+              name: Identifier @ 6:7-6:8 (145-146) = k
+              initializer: StringLiteral @ 6:10-6:18 (148-156) = "byeeee"
             }
           ]
         }
       }
     }
-    Var @ 160-195 {
-      name: Identifier @ 164-165 = p
-      typename: ObjectLiteralType @ 167-191 {
+    Var @ 7:1-7:36 (160-195) {
+      name: Identifier @ 7:5-7:6 (164-165) = p
+      typename: ObjectLiteralType @ 7:8-7:32 (167-191) {
         properties: [
-          PropertyDeclaration @ 169-178 {
-            name: Identifier @ 169-170 = x
-            typename: Identifier @ 172-178 = number
+          PropertyDeclaration @ 7:10-7:19 (169-178) {
+            name: Identifier @ 7:10-7:11 (169-170) = x
+            typename: Identifier @ 7:13-7:19 (172-178) = number
           }
-          PropertyDeclaration @ 180-189 {
-            name: Identifier @ 180-181 = y
-            typename: Identifier @ 183-189 = string
+          PropertyDeclaration @ 7:21-7:30 (180-189) {
+            name: Identifier @ 7:21-7:22 (180-181) = y
+            typename: Identifier @ 7:24-7:30 (183-189) = string
           }
         ]
       }
-      initializer: Identifier @ 194-195 = o
+      initializer: Identifier @ 7:35-7:36 (194-195) = o
     }
-    Var @ 197-247 {
-      name: Identifier @ 201-202 = q
-      typename: ObjectLiteralType @ 204-243 {
+    Var @ 8:1-8:51 (197-247) {
+      name: Identifier @ 8:5-8:6 (201-202) = q
+      typename: ObjectLiteralType @ 8:8-8:47 (204-243) {
         properties: [
-          PropertyDeclaration @ 206-215 {
-            name: Identifier @ 206-207 = x
-            typename: Identifier @ 209-215 = number
+          PropertyDeclaration @ 8:10-8:19 (206-215) {
+            name: Identifier @ 8:10-8:11 (206-207) = x
+            typename: Identifier @ 8:13-8:19 (209-215) = number
           }
-          PropertyDeclaration @ 217-226 {
-            name: Identifier @ 217-218 = y
-            typename: Identifier @ 220-226 = string
+          PropertyDeclaration @ 8:21-8:30 (217-226) {
+            name: Identifier @ 8:21-8:22 (217-218) = y
+            typename: Identifier @ 8:24-8:30 (220-226) = string
           }
-          PropertyDeclaration @ 228-241 {
-            name: Identifier @ 228-233 = extra
-            typename: Identifier @ 235-241 = string
+          PropertyDeclaration @ 8:32-8:45 (228-241) {
+            name: Identifier @ 8:32-8:37 (228-233) = extra
+            typename: Identifier @ 8:39-8:45 (235-241) = string
           }
         ]
       }
-      initializer: Identifier @ 246-247 = o
+      initializer: Identifier @ 8:50-8:51 (246-247) = o
     }
-    Var @ 249-273 {
-      name: Identifier @ 253-254 = r
-      typename: ObjectLiteralType @ 256-269 {
+    Var @ 9:1-9:25 (249-273) {
+      name: Identifier @ 9:5-9:6 (253-254) = r
+      typename: ObjectLiteralType @ 9:8-9:21 (256-269) {
         properties: [
-          PropertyDeclaration @ 258-267 {
-            name: Identifier @ 258-259 = x
-            typename: Identifier @ 261-267 = number
+          PropertyDeclaration @ 9:10-9:19 (258-267) {
+            name: Identifier @ 9:10-9:11 (258-259) = x
+            typename: Identifier @ 9:13-9:19 (261-267) = number
           }
         ]
       }
-      initializer: Identifier @ 272-273 = o
+      initializer: Identifier @ 9:24-9:25 (272-273) = o
     }
-    Var @ 275-330 {
-      name: Identifier @ 279-280 = s
-      typename: ObjectLiteralType @ 282-306 {
+    Var @ 10:1-10:56 (275-330) {
+      name: Identifier @ 10:5-10:6 (279-280) = s
+      typename: ObjectLiteralType @ 10:8-10:32 (282-306) {
         properties: [
-          PropertyDeclaration @ 284-293 {
-            name: Identifier @ 284-285 = x
-            typename: Identifier @ 287-293 = number
+          PropertyDeclaration @ 10:10-10:19 (284-293) {
+            name: Identifier @ 10:10-10:11 (284-285) = x
+            typename: Identifier @ 10:13-10:19 (287-293) = number
           }
-          PropertyDeclaration @ 295-304 {
-            name: Identifier @ 295-296 = z
-            typename: Identifier @ 298-304 = string
+          PropertyDeclaration @ 10:21-10:30 (295-304) {
+            name: Identifier @ 10:21-10:22 (295-296) = z
+            typename: Identifier @ 10:24-10:30 (298-304) = string
           }
         ]
       }
-      initializer: Object @ 309-330 {
+      initializer: Object @ 10:35-10:56 (309-330) {
         properties: [
-          PropertyInitializer @ 311-315 {
-            name: Identifier @ 311-312 = x
-            initializer: NumericLiteral @ 314-315 = 1
+          PropertyInitializer @ 10:37-10:41 (311-315) {
+            name: Identifier @ 10:37-10:38 (311-312) = x
+            initializer: NumericLiteral @ 10:40-10:41 (314-315) = 1
           }
-          PropertyInitializer @ 317-328 {
-            name: Identifier @ 317-318 = z
-            initializer: StringLiteral @ 320-328 = "string"
+          PropertyInitializer @ 10:43-10:54 (317-328) {
+            name: Identifier @ 10:43-10:44 (317-318) = z
+            initializer: StringLiteral @ 10:46-10:54 (320-328) = "string"
           }
         ]
       }
     }
-    Var @ 332-367 {
-      name: Identifier @ 336-337 = t
-      typename: ObjectLiteralType @ 339-363 {
+    Var @ 11:1-11:36 (332-367) {
+      name: Identifier @ 11:5-11:6 (336-337) = t
+      typename: ObjectLiteralType @ 11:8-11:32 (339-363) {
         properties: [
-          PropertyDeclaration @ 341-350 {
-            name: Identifier @ 341-342 = y
-            typename: Identifier @ 344-350 = string
+          PropertyDeclaration @ 11:10-11:19 (341-350) {
+            name: Identifier @ 11:10-11:11 (341-342) = y
+            typename: Identifier @ 11:13-11:19 (344-350) = string
           }
-          PropertyDeclaration @ 352-361 {
-            name: Identifier @ 352-353 = x
-            typename: Identifier @ 355-361 = number
+          PropertyDeclaration @ 11:21-11:30 (352-361) {
+            name: Identifier @ 11:21-11:22 (352-353) = x
+            typename: Identifier @ 11:24-11:30 (355-361) = number
           }
         ]
       }
-      initializer: Identifier @ 366-367 = o
+      initializer: Identifier @ 11:35-11:36 (366-367) = o
     }
-    Var @ 369-556 {
-      name: Identifier @ 373-376 = oof
+    Var @ 12:1-22:2 (369-556) {
+      name: Identifier @ 12:5-12:8 (373-376) = oof
       typename: <none>
-      initializer: Object @ 379-556 {
+      initializer: Object @ 12:11-22:2 (379-556) {
         properties: [
-          PropertyInitializer @ 386-399 {
-            name: Identifier @ 386-391 = first
-            initializer: StringLiteral @ 393-399 = "John"
+          PropertyInitializer @ 13:5-13:18 (386-399) {
+            name: Identifier @ 13:5-13:10 (386-391) = first
+            initializer: StringLiteral @ 13:12-13:18 (393-399) = "John"
           }
-          PropertyInitializer @ 406-417 {
-            name: Identifier @ 406-410 = last
-            initializer: StringLiteral @ 412-417 = "Doe"
+          PropertyInitializer @ 14:5-14:16 (406-417) {
+            name: Identifier @ 14:5-14:9 (406-410) = last
+            initializer: StringLiteral @ 14:11-14:16 (412-417) = "Doe"
           }
-          PropertyInitializer @ 424-534 {
-            name: Identifier @ 424-425 = f
-            initializer: Function @ 427-534 {
+          PropertyInitializer @ 15:5-20:6 (424-534) {
+            name: Identifier @ 15:5-15:6 (424-425) = f
+            initializer: Function @ 15:8-20:6 (427-534) {
               name: <none>
               type_parameters: <none>
               parameters: [
-                Parameter @ 437-446 {
-                  name: Identifier @ 437-438 = x
-                  typename: Identifier @ 440-446 = string
+                Parameter @ 15:18-15:27 (437-446) {
+                  name: Identifier @ 15:18-15:19 (437-438) = x
+                  typename: Identifier @ 15:21-15:27 (440-446) = string
                 }
               ]
               typename: <none>
               body: [
-                Return @ 459-527 {
-                  expression: Object @ 466-527 {
+                Return @ 16:9-19:10 (459-527) {
+                  expression: Object @ 16:16-19:10 (466-527) {
                     properties: [
-                      PropertyInitializer @ 481-489 {
-                        name: Identifier @ 481-486 = first
-                        initializer: Identifier @ 488-489 = x
+                      PropertyInitializer @ 17:13-17:21 (481-489) {
+                        name: Identifier @ 17:13-17:18 (481-486) = first
+                        initializer: Identifier @ 17:20-17:21 (488-489) = x
                       }
-                      PropertyInitializer @ 504-516 {
-                        name: Identifier @ 504-508 = last
-                        initializer: StringLiteral @ 510-516 = "Last"
+                      PropertyInitializer @ 18:13-18:25 (504-516) {
+                        name: Identifier @ 18:13-18:17 (504-508) = last
+                        initializer: StringLiteral @ 18:19-18:25 (510-516) = "Last"
                       }
                     ]
                   }
@@ -231,58 +231,58 @@ Module @ 0-699 {
               ]
             }
           }
-          PropertyInitializer @ 541-553 {
-            name: Identifier @ 541-546 = extra
-            initializer: StringLiteral @ 548-553 = "yep"
+          PropertyInitializer @ 21:5-21:17 (541-553) {
+            name: Identifier @ 21:5-21:10 (541-546) = extra
+            initializer: StringLiteral @ 21:12-21:17 (548-553) = "yep"
           }
         ]
       }
     }
-    TypeAlias @ 558-581 {
-      name: Identifier @ 563-565 = In
-      typename: ObjectLiteralType @ 568-581 {
+    TypeAlias @ 23:1-23:24 (558-581) {
+      name: Identifier @ 23:6-23:8 (563-565) = In
+      typename: ObjectLiteralType @ 23:11-23:24 (568-581) {
         properties: [
-          PropertyDeclaration @ 570-579 {
-            name: Identifier @ 570-571 = a
-            typename: Identifier @ 573-579 = number
+          PropertyDeclaration @ 23:13-23:22 (570-579) {
+            name: Identifier @ 23:13-23:14 (570-571) = a
+            typename: Identifier @ 23:16-23:22 (573-579) = number
           }
         ]
       }
     }
-    Var @ 583-671 {
-      name: Identifier @ 587-588 = f
+    Var @ 24:1-26:2 (583-671) {
+      name: Identifier @ 24:5-24:6 (587-588) = f
       typename: <none>
-      initializer: Function @ 591-671 {
+      initializer: Function @ 24:9-26:2 (591-671) {
         name: <none>
         type_parameters: <none>
         parameters: [
-          Parameter @ 601-622 {
-            name: Identifier @ 601-607 = inward
-            typename: ObjectLiteralType @ 609-622 {
+          Parameter @ 24:19-24:40 (601-622) {
+            name: Identifier @ 24:19-24:25 (601-607) = inward
+            typename: ObjectLiteralType @ 24:27-24:40 (609-622) {
               properties: [
-                PropertyDeclaration @ 611-620 {
-                  name: Identifier @ 611-612 = a
-                  typename: Identifier @ 614-620 = number
+                PropertyDeclaration @ 24:29-24:38 (611-620) {
+                  name: Identifier @ 24:29-24:30 (611-612) = a
+                  typename: Identifier @ 24:32-24:38 (614-620) = number
                 }
               ]
             }
           }
         ]
-        typename: ObjectLiteralType @ 625-638 {
+        typename: ObjectLiteralType @ 24:43-24:56 (625-638) {
           properties: [
-            PropertyDeclaration @ 627-636 {
-              name: Identifier @ 627-628 = c
-              typename: Identifier @ 630-636 = string
+            PropertyDeclaration @ 24:45-24:54 (627-636) {
+              name: Identifier @ 24:45-24:46 (627-628) = c
+              typename: Identifier @ 24:48-24:54 (630-636) = string
             }
           ]
         }
         body: [
-          Return @ 646-668 {
-            expression: Object @ 653-668 {
+          Return @ 25:5-25:27 (646-668) {
+            expression: Object @ 25:12-25:27 (653-668) {
               properties: [
-                PropertyInitializer @ 655-666 {
-                  name: Identifier @ 655-656 = c
-                  initializer: StringLiteral @ 658-666 = "string"
+                PropertyInitializer @ 25:14-25:25 (655-666) {
+                  name: Identifier @ 25:14-25:15 (655-656) = c
+                  initializer: StringLiteral @ 25:17-25:25 (658-666) = "string"
                 }
               ]
             }
@@ -290,24 +290,24 @@ Module @ 0-699 {
         ]
       }
     }
-    Var @ 673-693 {
-      name: Identifier @ 677-678 = i
-      typename: Identifier @ 680-682 = In
-      initializer: Object @ 685-693 {
+    Var @ 27:1-27:21 (673-693) {
+      name: Identifier @ 27:5-27:6 (677-678) = i
+      typename: Identifier @ 27:8-27:10 (680-682) = In
+      initializer: Object @ 27:13-27:21 (685-693) {
         properties: [
-          PropertyInitializer @ 687-691 {
-            name: Identifier @ 687-688 = a
-            initializer: NumericLiteral @ 690-691 = 1
+          PropertyInitializer @ 27:15-27:19 (687-691) {
+            name: Identifier @ 27:15-27:16 (687-688) = a
+            initializer: NumericLiteral @ 27:18-27:19 (690-691) = 1
           }
         ]
       }
     }
-    ExpressionStatement @ 695-699 {
-      expression: Call @ 695-699 {
-        expression: Identifier @ 695-696 = f
+    ExpressionStatement @ 28:1-28:5 (695-699) {
+      expression: Call @ 28:1-28:5 (695-699) {
+        expression: Identifier @ 28:1-28:2 (695-696) = f
         type_arguments: <none>
         arguments: [
-          Identifier @ 697-698 = i
+          Identifier @ 28:3-28:4 (697-698) = i
         ]
       }
     }

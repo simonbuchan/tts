@@ -1,9 +1,9 @@
-Module @ 0-25 {
+Module @ 1:1-1:26 (0-25) {
   statements: [
-    Var @ 0-25 {
-      name: Identifier @ 4-21 = singleDeclaration
+    Var @ 1:1-1:26 (0-25) {
+      name: Identifier @ 1:5-1:22 (4-21) = singleDeclaration
       typename: <none>
-      initializer: NumericLiteral @ 24-25 = 1
+      initializer: NumericLiteral @ 1:25-1:26 (24-25) = 1
     }
   ]
 }

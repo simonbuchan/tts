@@ -1,296 +1,296 @@
-Module @ 0-595 {
+Module @ 1:1-17:78 (0-589) {
   statements: [
-    Var @ 0-49 {
-      name: Identifier @ 4-5 = f
+    Var @ 1:1-1:50 (0-49) {
+      name: Identifier @ 1:5-1:6 (4-5) = f
       typename: <none>
-      initializer: Function @ 8-49 {
+      initializer: Function @ 1:9-1:50 (8-49) {
         name: <none>
         type_parameters: <none>
         parameters: [
-          Parameter @ 18-27 {
-            name: Identifier @ 18-19 = x
-            typename: Identifier @ 21-27 = number
+          Parameter @ 1:19-1:28 (18-27) {
+            name: Identifier @ 1:19-1:20 (18-19) = x
+            typename: Identifier @ 1:22-1:28 (21-27) = number
           }
         ]
-        typename: Identifier @ 30-36 = number
+        typename: Identifier @ 1:31-1:37 (30-36) = number
         body: [
-          Return @ 39-47 {
-            expression: Identifier @ 46-47 = x
+          Return @ 1:40-1:48 (39-47) {
+            expression: Identifier @ 1:47-1:48 (46-47) = x
           }
         ]
       }
     }
-    Var @ 52-87 {
-      name: Identifier @ 56-57 = g
+    Var @ 2:1-2:36 (52-87) {
+      name: Identifier @ 2:5-2:6 (56-57) = g
       typename: <none>
-      initializer: Function @ 60-87 {
-        name: Identifier @ 69-70 = g
+      initializer: Function @ 2:9-2:36 (60-87) {
+        name: Identifier @ 2:18-2:19 (69-70) = g
         type_parameters: <none>
         parameters: [
-          Parameter @ 72-73 {
-            name: Identifier @ 72-73 = x
+          Parameter @ 2:21-2:22 (72-73) {
+            name: Identifier @ 2:21-2:22 (72-73) = x
             typename: <none>
           }
         ]
         typename: <none>
         body: [
-          Return @ 77-85 {
-            expression: Identifier @ 84-85 = x
+          Return @ 2:26-2:34 (77-85) {
+            expression: Identifier @ 2:33-2:34 (84-85) = x
           }
         ]
       }
     }
-    Var @ 90-130 {
-      name: Identifier @ 94-95 = e
+    Var @ 3:1-3:41 (90-130) {
+      name: Identifier @ 3:5-3:6 (94-95) = e
       typename: <none>
-      initializer: Function @ 98-130 {
+      initializer: Function @ 3:9-3:41 (98-130) {
         name: <none>
         type_parameters: <none>
         parameters: [
         ]
-        typename: Identifier @ 111-117 = string
+        typename: Identifier @ 3:22-3:28 (111-117) = string
         body: [
-          Return @ 120-128 {
-            expression: NumericLiteral @ 127-128 = 1
+          Return @ 3:31-3:39 (120-128) {
+            expression: NumericLiteral @ 3:38-3:39 (127-128) = 1
           }
         ]
       }
     }
-    ExpressionStatement @ 132-137 {
-      expression: Assignment @ 132-137 {
-        name: Identifier @ 132-133 = e
-        value: Identifier @ 136-137 = f
+    ExpressionStatement @ 4:1-4:6 (132-137) {
+      expression: Assignment @ 4:1-4:6 (132-137) {
+        name: Identifier @ 4:1-4:2 (132-133) = e
+        value: Identifier @ 4:5-4:6 (136-137) = f
       }
     }
-    ExpressionStatement @ 139-144 {
-      expression: Assignment @ 139-144 {
-        name: Identifier @ 139-140 = e
-        value: Identifier @ 143-144 = g
+    ExpressionStatement @ 5:1-5:6 (139-144) {
+      expression: Assignment @ 5:1-5:6 (139-144) {
+        name: Identifier @ 5:1-5:2 (139-140) = e
+        value: Identifier @ 5:5-5:6 (143-144) = g
       }
     }
-    ExpressionStatement @ 146-151 {
-      expression: Assignment @ 146-151 {
-        name: Identifier @ 146-147 = f
-        value: Identifier @ 150-151 = e
+    ExpressionStatement @ 6:1-6:6 (146-151) {
+      expression: Assignment @ 6:1-6:6 (146-151) {
+        name: Identifier @ 6:1-6:2 (146-147) = f
+        value: Identifier @ 6:5-6:6 (150-151) = e
       }
     }
-    ExpressionStatement @ 153-158 {
-      expression: Assignment @ 153-158 {
-        name: Identifier @ 153-154 = g
-        value: Identifier @ 157-158 = e
+    ExpressionStatement @ 7:1-7:6 (153-158) {
+      expression: Assignment @ 7:1-7:6 (153-158) {
+        name: Identifier @ 7:1-7:2 (153-154) = g
+        value: Identifier @ 7:5-7:6 (157-158) = e
       }
     }
-    ExpressionStatement @ 160-197 {
-      expression: Assignment @ 160-197 {
-        name: Identifier @ 160-161 = e
-        value: Function @ 164-197 {
+    ExpressionStatement @ 8:1-8:32 (160-191) {
+      expression: Assignment @ 8:1-8:32 (160-191) {
+        name: Identifier @ 8:1-8:2 (160-161) = e
+        value: Function @ 8:5-8:32 (164-191) {
           name: <none>
           type_parameters: <none>
           parameters: [
           ]
           typename: <none>
           body: [
-            Return @ 183-194 {
-              expression: StringLiteral @ 190-194 = "hi"
+            Return @ 8:19-8:30 (178-189) {
+              expression: StringLiteral @ 8:26-8:30 (185-189) = "hi"
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 199-227 {
-      expression: Assignment @ 199-227 {
-        name: Identifier @ 199-200 = e
-        value: Function @ 203-227 {
+    ExpressionStatement @ 9:1-9:29 (193-221) {
+      expression: Assignment @ 9:1-9:29 (193-221) {
+        name: Identifier @ 9:1-9:2 (193-194) = e
+        value: Function @ 9:5-9:29 (197-221) {
           name: <none>
           type_parameters: <none>
           parameters: [
           ]
           typename: <none>
           body: [
-            Return @ 217-225 {
-              expression: NumericLiteral @ 224-225 = 0
+            Return @ 9:19-9:27 (211-219) {
+              expression: NumericLiteral @ 9:26-9:27 (218-219) = 0
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 229-267 {
-      expression: Assignment @ 229-267 {
-        name: Identifier @ 229-230 = f
-        value: Function @ 233-267 {
+    ExpressionStatement @ 10:1-10:39 (223-261) {
+      expression: Assignment @ 10:1-10:39 (223-261) {
+        name: Identifier @ 10:1-10:2 (223-224) = f
+        value: Function @ 10:5-10:39 (227-261) {
           name: <none>
           type_parameters: <none>
           parameters: [
-            Parameter @ 243-252 {
-              name: Identifier @ 243-244 = y
-              typename: Identifier @ 246-252 = number
+            Parameter @ 10:15-10:24 (237-246) {
+              name: Identifier @ 10:15-10:16 (237-238) = y
+              typename: Identifier @ 10:18-10:24 (240-246) = number
             }
           ]
           typename: <none>
           body: [
-            Return @ 256-265 {
-              expression: NumericLiteral @ 263-265 = 12
+            Return @ 10:28-10:37 (250-259) {
+              expression: NumericLiteral @ 10:35-10:37 (257-259) = 12
             }
           ]
         }
       }
     }
-    ExpressionStatement @ 269-307 {
-      expression: Assignment @ 269-307 {
-        name: Identifier @ 269-270 = f
-        value: Function @ 273-307 {
+    ExpressionStatement @ 11:1-11:39 (263-301) {
+      expression: Assignment @ 11:1-11:39 (263-301) {
+        name: Identifier @ 11:1-11:2 (263-264) = f
+        value: Function @ 11:5-11:39 (267-301) {
           name: <none>
           type_parameters: <none>
           parameters: [
-            Parameter @ 283-292 {
-              name: Identifier @ 283-284 = z
-              typename: Identifier @ 286-292 = string
+            Parameter @ 11:15-11:24 (277-286) {
+              name: Identifier @ 11:15-11:16 (277-278) = z
+              typename: Identifier @ 11:18-11:24 (280-286) = string
             }
           ]
           typename: <none>
           body: [
-            Return @ 296-305 {
-              expression: NumericLiteral @ 303-305 = 13
+            Return @ 11:28-11:37 (290-299) {
+              expression: NumericLiteral @ 11:35-11:37 (297-299) = 13
             }
           ]
         }
       }
     }
-    Var @ 309-365 {
-      name: Identifier @ 313-314 = h
-      typename: SignatureDeclaration @ 316-337 {
+    Var @ 12:1-12:57 (303-359) {
+      name: Identifier @ 12:5-12:6 (307-308) = h
+      typename: SignatureDeclaration @ 12:8-12:29 (310-331) {
         type_parameters: <none>
         parameters: [
-          Parameter @ 317-326 {
-            name: Identifier @ 317-318 = x
-            typename: Identifier @ 320-326 = number
+          Parameter @ 12:9-12:18 (311-320) {
+            name: Identifier @ 12:9-12:10 (311-312) = x
+            typename: Identifier @ 12:12-12:18 (314-320) = number
           }
         ]
-        typename: Identifier @ 331-337 = number
+        typename: Identifier @ 12:23-12:29 (325-331) = number
       }
-      initializer: Function @ 340-365 {
+      initializer: Function @ 12:32-12:57 (334-359) {
         name: <none>
         type_parameters: <none>
         parameters: [
-          Parameter @ 350-351 {
-            name: Identifier @ 350-351 = x
+          Parameter @ 12:42-12:43 (344-345) {
+            name: Identifier @ 12:42-12:43 (344-345) = x
             typename: <none>
           }
         ]
         typename: <none>
         body: [
-          Return @ 355-363 {
-            expression: Identifier @ 362-363 = x
+          Return @ 12:47-12:55 (349-357) {
+            expression: Identifier @ 12:54-12:55 (356-357) = x
           }
         ]
       }
     }
-    ExpressionStatement @ 367-372 {
-      expression: Assignment @ 367-372 {
-        name: Identifier @ 367-368 = h
-        value: Identifier @ 371-372 = f
+    ExpressionStatement @ 13:1-13:6 (361-366) {
+      expression: Assignment @ 13:1-13:6 (361-366) {
+        name: Identifier @ 13:1-13:2 (361-362) = h
+        value: Identifier @ 13:5-13:6 (365-366) = f
       }
     }
-    Var @ 374-406 {
-      name: Identifier @ 378-379 = i
-      typename: SignatureDeclaration @ 381-402 {
+    Var @ 14:1-14:33 (368-400) {
+      name: Identifier @ 14:5-14:6 (372-373) = i
+      typename: SignatureDeclaration @ 14:8-14:29 (375-396) {
         type_parameters: <none>
         parameters: [
-          Parameter @ 382-391 {
-            name: Identifier @ 382-383 = x
-            typename: Identifier @ 385-391 = number
+          Parameter @ 14:9-14:18 (376-385) {
+            name: Identifier @ 14:9-14:10 (376-377) = x
+            typename: Identifier @ 14:12-14:18 (379-385) = number
           }
         ]
-        typename: Identifier @ 396-402 = string
+        typename: Identifier @ 14:23-14:29 (390-396) = string
       }
-      initializer: Identifier @ 405-406 = f
+      initializer: Identifier @ 14:32-14:33 (399-400) = f
     }
-    Var @ 408-440 {
-      name: Identifier @ 412-413 = j
-      typename: SignatureDeclaration @ 415-436 {
+    Var @ 15:1-15:33 (402-434) {
+      name: Identifier @ 15:5-15:6 (406-407) = j
+      typename: SignatureDeclaration @ 15:8-15:29 (409-430) {
         type_parameters: <none>
         parameters: [
-          Parameter @ 416-425 {
-            name: Identifier @ 416-417 = x
-            typename: Identifier @ 419-425 = string
+          Parameter @ 15:9-15:18 (410-419) {
+            name: Identifier @ 15:9-15:10 (410-411) = x
+            typename: Identifier @ 15:12-15:18 (413-419) = string
           }
         ]
-        typename: Identifier @ 430-436 = number
+        typename: Identifier @ 15:23-15:29 (424-430) = number
       }
-      initializer: Identifier @ 439-440 = f
+      initializer: Identifier @ 15:32-15:33 (433-434) = f
     }
-    Var @ 442-516 {
-      name: Identifier @ 446-451 = apply
+    Var @ 16:1-16:75 (436-510) {
+      name: Identifier @ 16:5-16:10 (440-445) = apply
       typename: <none>
-      initializer: Function @ 454-516 {
+      initializer: Function @ 16:13-16:75 (448-510) {
         name: <none>
         type_parameters: <none>
         parameters: [
-          Parameter @ 464-488 {
-            name: Identifier @ 464-465 = f
-            typename: SignatureDeclaration @ 467-488 {
+          Parameter @ 16:23-16:47 (458-482) {
+            name: Identifier @ 16:23-16:24 (458-459) = f
+            typename: SignatureDeclaration @ 16:26-16:47 (461-482) {
               type_parameters: <none>
               parameters: [
-                Parameter @ 468-477 {
-                  name: Identifier @ 468-469 = x
-                  typename: Identifier @ 471-477 = number
+                Parameter @ 16:27-16:36 (462-471) {
+                  name: Identifier @ 16:27-16:28 (462-463) = x
+                  typename: Identifier @ 16:30-16:36 (465-471) = number
                 }
               ]
-              typename: Identifier @ 482-488 = number
+              typename: Identifier @ 16:41-16:47 (476-482) = number
             }
           }
-          Parameter @ 490-499 {
-            name: Identifier @ 490-491 = x
-            typename: Identifier @ 493-499 = number
+          Parameter @ 16:49-16:58 (484-493) {
+            name: Identifier @ 16:49-16:50 (484-485) = x
+            typename: Identifier @ 16:52-16:58 (487-493) = number
           }
         ]
         typename: <none>
         body: [
-          Return @ 503-514 {
-            expression: Call @ 510-514 {
-              expression: Identifier @ 510-511 = f
+          Return @ 16:62-16:73 (497-508) {
+            expression: Call @ 16:69-16:73 (504-508) {
+              expression: Identifier @ 16:69-16:70 (504-505) = f
               type_arguments: <none>
               arguments: [
-                Identifier @ 512-513 = x
+                Identifier @ 16:71-16:72 (506-507) = x
               ]
             }
           }
         ]
       }
     }
-    Var @ 518-595 {
-      name: Identifier @ 522-530 = misapply
+    Var @ 17:1-17:78 (512-589) {
+      name: Identifier @ 17:5-17:13 (516-524) = misapply
       typename: <none>
-      initializer: Function @ 533-595 {
+      initializer: Function @ 17:16-17:78 (527-589) {
         name: <none>
         type_parameters: <none>
         parameters: [
-          Parameter @ 543-567 {
-            name: Identifier @ 543-544 = f
-            typename: SignatureDeclaration @ 546-567 {
+          Parameter @ 17:26-17:50 (537-561) {
+            name: Identifier @ 17:26-17:27 (537-538) = f
+            typename: SignatureDeclaration @ 17:29-17:50 (540-561) {
               type_parameters: <none>
               parameters: [
-                Parameter @ 547-556 {
-                  name: Identifier @ 547-548 = x
-                  typename: Identifier @ 550-556 = number
+                Parameter @ 17:30-17:39 (541-550) {
+                  name: Identifier @ 17:30-17:31 (541-542) = x
+                  typename: Identifier @ 17:33-17:39 (544-550) = number
                 }
               ]
-              typename: Identifier @ 561-567 = number
+              typename: Identifier @ 17:44-17:50 (555-561) = number
             }
           }
-          Parameter @ 569-578 {
-            name: Identifier @ 569-570 = x
-            typename: Identifier @ 572-578 = string
+          Parameter @ 17:52-17:61 (563-572) {
+            name: Identifier @ 17:52-17:53 (563-564) = x
+            typename: Identifier @ 17:55-17:61 (566-572) = string
           }
         ]
         typename: <none>
         body: [
-          Return @ 582-593 {
-            expression: Call @ 589-593 {
-              expression: Identifier @ 589-590 = f
+          Return @ 17:65-17:76 (576-587) {
+            expression: Call @ 17:72-17:76 (583-587) {
+              expression: Identifier @ 17:72-17:73 (583-584) = f
               type_arguments: <none>
               arguments: [
-                Identifier @ 591-592 = x
+                Identifier @ 17:74-17:75 (585-586) = x
               ]
             }
           }

@@ -8,21 +8,25 @@ pub struct BindResult {
     pub symbols: List<Symbol>,
     /// The symbol added for given syntax.
     /// This is `Node.symbol` from `centi-typescript`
-    pub syntax_symbols: std::collections::HashMap<Id<Syntax>, Id<Symbol>>,
-    /// All symbol tables, either locals or object (type) members.
-    pub tables: List<Table>,
-    /// The locals table for given syntax (Function or Signature)
-    pub syntax_locals: std::collections::HashMap<Id<Syntax>, Id<Table>>,
-    /// The root table id for the module
-    pub module_table: Id<Table>,
+    pub syntax_symbols: Table<Id<Syntax>, Id<Symbol>>,
+    /// Symbol lookup tables
+    pub scopes: List<Scope>,
+    /// The locals scope table for given syntax item (Function or Signature),
+    /// (not including the Module)
+    pub syntax_locals: Table<Id<Syntax>, Id<Scope>>,
+    /// The members for the given symbol for an object value or type
+    pub symbol_members: Table<Id<Symbol>, Members>,
+    /// The root table id for the Module
+    pub module_locals: Id<Scope>,
 }
 
 pub fn bind(parsed: &ParseResult, reporter: &mut Reporter<'_>) -> BindResult {
     let mut context = BindContext {
         symbols: Default::default(),
         syntax_symbols: Default::default(),
-        tables: Default::default(),
+        scopes: Default::default(),
         syntax_locals: Default::default(),
+        symbol_members: Default::default(),
         syntax: &parsed.syntax,
         reporter,
     };
@@ -33,21 +37,21 @@ pub fn bind(parsed: &ParseResult, reporter: &mut Reporter<'_>) -> BindResult {
         module_binder.statement(statement);
     }
 
-    let module_table = module_binder.table;
+    let module_locals = module_binder.scope;
 
     BindResult {
         symbols: context.symbols,
         syntax_symbols: context.syntax_symbols,
-        tables: context.tables,
+        scopes: context.scopes,
         syntax_locals: context.syntax_locals,
-        module_table,
+        symbol_members: context.symbol_members,
+        module_locals,
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Symbol {
     pub declarations: Vec<Declaration>,
-    pub object_members: Option<Id<Table>>,
 }
 
 impl Symbol {
@@ -92,13 +96,44 @@ pub enum Meaning {
     Value,
 }
 
-pub struct Table {
-    pub parent: Option<Id<Table>>,
-    pub symbols: std::collections::HashMap<String, Id<Symbol>>,
+#[derive(Clone)]
+pub struct Table<K, V>(pub std::collections::HashMap<K, V>);
+
+impl<K, V> std::ops::Index<K> for Table<K, V>
+where
+    K: Eq + std::hash::Hash,
+{
+    type Output = V;
+
+    fn index(&self, index: K) -> &Self::Output {
+        &self.0[&index]
+    }
 }
 
-impl Table {
-    pub fn new(parent: Option<Id<Table>>) -> Self {
+impl<K, V> std::ops::IndexMut<K> for Table<K, V>
+where
+    K: Eq + std::hash::Hash,
+    V: Default,
+{
+    fn index_mut(&mut self, index: K) -> &mut Self::Output {
+        self.0.entry(index).or_default()
+    }
+}
+
+impl<K, V> Default for Table<K, V> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct Scope {
+    pub parent: Option<Id<Scope>>,
+    pub symbols: Table<String, Id<Symbol>>,
+}
+
+impl Scope {
+    pub fn new(parent: Option<Id<Scope>>) -> Self {
         Self {
             parent,
             symbols: Default::default(),
@@ -106,22 +141,31 @@ impl Table {
     }
 }
 
+#[derive(Clone, Default)]
+pub struct Members {
+    pub items: Vec<(String, Id<Symbol>)>,
+}
+
 struct BindContext<'a, 'reports> {
     /// See [`BindResult::symbols`]
     symbols: List<Symbol>,
     /// See [`BindResult::syntax_symbols`]
-    syntax_symbols: std::collections::HashMap<Id<Syntax>, Id<Symbol>>,
-    /// See [`BindResult::tables`]
-    tables: List<Table>,
+    syntax_symbols: Table<Id<Syntax>, Id<Symbol>>,
+    /// See [`BindResult::locals`]
+    scopes: List<Scope>,
     /// See [`BindResult::syntax_locals`]
-    syntax_locals: std::collections::HashMap<Id<Syntax>, Id<Table>>,
+    syntax_locals: Table<Id<Syntax>, Id<Scope>>,
+    /// See [`BindResult::symbol_members`]
+    symbol_members: Table<Id<Symbol>, Members>,
+    /// Parsed syntax
     syntax: &'a SyntaxList,
+    /// Error reporting
     reporter: &'a mut Reporter<'reports>,
 }
 
 impl<'a, 'reports> BindContext<'a, 'reports> {
     fn add_decl(&mut self, syntax: Id<Syntax>, symbol: Id<Symbol>) {
-        match self.syntax_symbols.entry(syntax) {
+        match self.syntax_symbols.0.entry(syntax) {
             std::collections::hash_map::Entry::Vacant(entry) => {
                 entry.insert(symbol);
             }
@@ -141,35 +185,32 @@ impl<'a, 'reports> BindContext<'a, 'reports> {
         id
     }
 
-    fn binder(&mut self, parent_table: Option<Id<Table>>) -> Binder<'_, 'a, 'reports> {
-        let table = self.tables.add(Table::new(parent_table));
+    fn binder(&mut self, parent_scope: Option<Id<Scope>>) -> Binder<'_, 'a, 'reports> {
+        let table = self.scopes.add(Scope::new(parent_scope));
         Binder {
             context: self,
-            table,
+            scope: table,
         }
     }
 }
 
 struct Binder<'context, 'a, 'reports> {
     context: &'context mut BindContext<'a, 'reports>,
-    table: Id<Table>,
+    scope: Id<Scope>,
 }
 
 impl<'context, 'a, 'reports> Binder<'context, 'a, 'reports> {
-    fn add_symbol_for(&mut self, syntax: Id<Syntax>, meaning: Meaning) -> Id<Symbol> {
-        self.context.add_symbol(Declaration { syntax, meaning })
-    }
-
     fn declare_symbol(&mut self, name: Identifier, declaration: Declaration) {
         let Some(text) = &self.context.syntax[name] else {
             // failed to parse
             return;
         };
-        match self.context.tables[self.table].symbols.get(text) {
+        match self.context.scopes[self.scope].symbols.0.get(text) {
             None => {
                 let id = self.context.add_symbol(declaration);
-                self.context.tables[self.table]
+                self.context.scopes[self.scope]
                     .symbols
+                    .0
                     .insert(text.clone(), id);
             }
             Some(&id) => {
@@ -232,22 +273,24 @@ impl<'context, 'a, 'reports> Binder<'context, 'a, 'reports> {
                 self.expression(data.value);
             }
             Expression::Object(id) => {
-                let symbol = self.add_symbol_for(id.0, Meaning::Value);
+                let symbol = self.context.add_symbol(Declaration::value(id.0));
+                let mut members = Members::default();
                 let data = &self.context.syntax[id];
-                let mut binder = self.context.binder(Some(self.table));
                 for property in data.properties.iter().copied() {
-                    let decl = Declaration::value(property.0);
-                    let data = &binder.context.syntax[property];
-                    binder.declare_symbol(data.name, decl);
-                    binder.expression(data.initializer);
+                    let member = self.context.add_symbol(Declaration::value(property.0));
+                    let data = &self.context.syntax[property];
+                    if let Some(name) = &self.context.syntax[data.name] {
+                        members.items.push((name.to_string(), member));
+                    }
+                    self.expression(data.initializer);
                 }
-                self.context.symbols[symbol].object_members = Some(binder.table);
+                self.context.symbol_members.0.insert(symbol, members);
             }
             Expression::Function(id) => {
-                self.add_symbol_for(id.0, Meaning::Value);
+                self.context.add_symbol(Declaration::value(id.0));
                 let data = &self.context.syntax[id];
-                let mut binder = self.context.binder(Some(self.table));
-                binder.context.syntax_locals.insert(id.0, binder.table);
+                let mut binder = self.context.binder(Some(self.scope));
+                binder.context.syntax_locals.0.insert(id.0, binder.scope);
                 binder.ty_opt(data.typename);
                 if let Some(ps) = &data.type_parameters {
                     for p in ps.iter().copied() {
@@ -291,23 +334,25 @@ impl<'context, 'a, 'reports> Binder<'context, 'a, 'reports> {
     fn ty(&mut self, syntax: Ty) {
         match syntax {
             Ty::ObjectLiteralType(id) => {
-                let symbol = self.add_symbol_for(id.0, Meaning::Type);
-                let mut binder = self.context.binder(Some(self.table));
-                let data = &binder.context.syntax[id];
+                let symbol = self.context.add_symbol(Declaration::ty(id.0));
+                let mut members = Members::default();
+                let data = &self.context.syntax[id];
                 for prop in data.properties.iter().copied() {
-                    let decl = Declaration::value(prop.0);
-                    let data = &binder.context.syntax[prop];
-                    binder.declare_symbol(data.name, decl);
-                    binder.ty_opt(data.typename);
+                    let member = self.context.add_symbol(Declaration::value(prop.0));
+                    let data = &self.context.syntax[prop];
+                    if let Some(name) = &self.context.syntax[data.name] {
+                        members.items.push((name.to_string(), member));
+                    }
+                    self.ty_opt(data.typename);
                 }
-                self.context.symbols[symbol].object_members = Some(binder.table);
+                self.context.symbol_members.0.insert(symbol, members);
             }
             Ty::Identifier(_) => {}
             Ty::SignatureDeclaration(id) => {
-                self.add_symbol_for(id.0, Meaning::Type);
+                self.context.add_symbol(Declaration::ty(id.0));
                 let data = &self.context.syntax[id];
-                let mut binder = self.context.binder(Some(self.table));
-                binder.context.syntax_locals.insert(id.0, binder.table);
+                let mut binder = self.context.binder(Some(self.scope));
+                binder.context.syntax_locals.0.insert(id.0, binder.scope);
                 if let Some(ps) = &data.type_parameters {
                     for p in ps.iter().copied() {
                         let decl = Declaration::ty(p.0);

@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use std::marker::PhantomData;
+
+#[derive(Clone, Debug)]
 pub struct List<T>(Vec<T>);
 
 impl<T> Default for List<T> {
@@ -9,7 +11,7 @@ impl<T> Default for List<T> {
 
 impl<T> List<T> {
     pub fn add(&mut self, item: T) -> Id<T> {
-        let id = Id(self.0.len(), std::marker::PhantomData);
+        let id = Id(self.0.len(), PhantomData);
         self.0.push(item);
         id
     }
@@ -19,6 +21,17 @@ impl<T> List<T> {
         T: Default,
     {
         self.add(Default::default())
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (Id<T>, &T)> {
+        self.0
+            .iter()
+            .enumerate()
+            .map(|(index, value)| (Id(index, PhantomData), value))
+    }
+
+    pub fn values(&self) -> impl Iterator<Item = &T> {
+        self.0.iter()
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::bind::{BindResult, Meaning, Symbol, Table};
+use crate::bind::{BindResult, Meaning, Members, Scope, Symbol, Table};
 use crate::diag::{Message, Reporter};
 use crate::list::{Id, List};
 use crate::parse::ParseResult;
@@ -8,23 +8,36 @@ use crate::syntax::*;
 #[derive(Default)]
 pub struct CheckResult {
     pub type_defs: List<TypeDef>,
+    pub symbol_value_types: Table<Id<Symbol>, TypeId>,
+    pub symbol_type_types: Table<Id<Symbol>, TypeId>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum TypeDef {
-    Object { members: Id<Table> },
+    Object(ObjectTypeDef),
     TypeVariable { name: Identifier },
-    Function(FunctionTypeDef),
+    Function(Signature),
 }
 
-#[derive(Clone, Debug)]
-pub struct FunctionTypeDef {
+#[derive(Clone)]
+pub struct ObjectTypeDef {
+    pub members: Table<String, MemberTypeDef>,
+}
+
+#[derive(Clone)]
+pub struct MemberTypeDef {
+    pub symbol: Id<Symbol>,
+    pub ty: TypeId,
+}
+
+#[derive(Clone)]
+pub struct Signature {
     pub type_parameters: Option<Vec<Id<Symbol>>>,
     pub parameters: Vec<Id<Symbol>>,
     pub return_type: TypeId,
 }
 
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum TypeId {
     Void,
     Error,
@@ -41,19 +54,20 @@ pub fn check(
 ) -> CheckResult {
     let mut context = CheckContext {
         syntax: &parsed.syntax,
-        symbols: &bindings.symbols,
+        symbols: bindings.symbols.clone(),
         syntax_symbols: &bindings.syntax_symbols,
-        tables: &bindings.tables,
+        scopes: bindings.scopes.clone(),
         syntax_locals: &bindings.syntax_locals,
-
-        symbol_value_types: std::collections::HashMap::new(),
-        symbol_type_types: std::collections::HashMap::new(),
+        symbol_members: &bindings.symbol_members,
         type_defs: Default::default(),
+
+        symbol_value_types: Default::default(),
+        symbol_type_types: Default::default(),
 
         reporter,
     };
 
-    let mut checker = context.checker(bindings.module_table);
+    let mut checker = context.checker(bindings.module_locals);
 
     for statement in parsed.syntax[parsed.module].statements.iter().copied() {
         checker.statement(statement);
@@ -61,6 +75,8 @@ pub fn check(
 
     CheckResult {
         type_defs: context.type_defs,
+        symbol_value_types: context.symbol_value_types,
+        symbol_type_types: context.symbol_type_types,
     }
 }
 
@@ -70,33 +86,56 @@ struct TypeMapper {
 }
 
 struct CheckContext<'a, 'reports> {
+    // inputs:
     // ParseResult
     syntax: &'a SyntaxList,
     // BindResult
-    symbols: &'a List<Symbol>,
-    syntax_symbols: &'a std::collections::HashMap<Id<Syntax>, Id<Symbol>>,
-    tables: &'a List<Table>,
-    syntax_locals: &'a std::collections::HashMap<Id<Syntax>, Id<Table>>,
+    symbols: List<Symbol>,
+    syntax_symbols: &'a Table<Id<Syntax>, Id<Symbol>>,
+    scopes: List<Scope>,
+    syntax_locals: &'a Table<Id<Syntax>, Id<Scope>>,
+    symbol_members: &'a Table<Id<Symbol>, Members>,
+    // output:
     // CheckResult
     type_defs: List<TypeDef>,
+    symbol_value_types: Table<Id<Symbol>, TypeId>,
+    symbol_type_types: Table<Id<Symbol>, TypeId>,
 
-    symbol_value_types: std::collections::HashMap<Id<Symbol>, TypeId>,
-    symbol_type_types: std::collections::HashMap<Id<Symbol>, TypeId>,
+    // errors
     reporter: &'a mut Reporter<'reports>,
 }
 
 impl<'a, 'reports> CheckContext<'a, 'reports> {
-    fn checker(&mut self, table: Id<Table>) -> Checker<'_, 'a, 'reports> {
+    fn checker(&mut self, scope: Id<Scope>) -> Checker<'_, 'a, 'reports> {
         Checker {
             context: self,
-            table,
+            scope,
         }
+    }
+
+    fn error(&mut self, span: SourceSpan, message: Message) -> TypeId {
+        self.reporter.error(span, message);
+        TypeId::Error
+    }
+
+    fn error_for(&mut self, syntax: Id<Syntax>, message: Message) -> TypeId {
+        let span = self.syntax.span(syntax);
+        self.error(span, message)
+    }
+
+    fn define_type(&mut self, type_def: TypeDef) -> TypeId {
+        TypeId::Def(self.type_defs.add(type_def))
+    }
+
+    fn syntax_symbol(&self, syntax: Id<Syntax>) -> &Symbol {
+        let id = self.syntax_symbols[syntax];
+        &self.symbols[id]
     }
 }
 
 struct Checker<'context, 'a, 'reports> {
     context: &'context mut CheckContext<'a, 'reports>,
-    table: Id<Table>,
+    scope: Id<Scope>,
 }
 
 impl Checker<'_, '_, '_> {
@@ -132,7 +171,8 @@ impl Checker<'_, '_, '_> {
                 let left = self.identifier(data.name);
                 let right = self.expression(data.value);
                 if !self.is_assignable_to(right, left) {
-                    self.error_for(syntax.0, Message::Assign { left, right });
+                    self.context
+                        .error_for(syntax.0, Message::Assign { left, right });
                 }
                 left
             }
@@ -150,22 +190,33 @@ impl Checker<'_, '_, '_> {
     fn object(&mut self, syntax: Object) -> TypeId {
         let data = &self.context.syntax[syntax];
         for p in data.properties.iter().copied() {
-            self.property(p);
+            self.property_initializer(p);
         }
 
-        let symbol = self.syntax_symbol(syntax.0);
-        let members = symbol.object_members.expect("expected object symbol");
-        self.define_type(TypeDef::Object { members })
+        let symbol = self.context.syntax_symbols[syntax.0];
+        let members = Table(
+            self.context.symbol_members[symbol]
+                .items
+                .iter()
+                .cloned()
+                .map(|(name, symbol)| {
+                    let ty = self.value_type_of_symbol(symbol);
+                    (name, MemberTypeDef { symbol, ty })
+                })
+                .collect(),
+        );
+        self.context
+            .define_type(TypeDef::Object(ObjectTypeDef { members }))
     }
 
-    fn property(&mut self, syntax: PropertyInitializer) -> TypeId {
+    fn property_initializer(&mut self, syntax: PropertyInitializer) -> TypeId {
         let data = &self.context.syntax[syntax];
         self.expression(data.initializer)
     }
 
     fn function(&mut self, syntax: Function) -> TypeId {
-        let locals = self.context.syntax_locals[&syntax.0];
-        let symbol = self.context.syntax_symbols[&syntax.0];
+        let locals = self.context.syntax_locals[syntax.0];
+        let symbol = self.context.syntax_symbols[syntax.0];
         self.context.checker(locals).value_type_of_symbol(symbol)
     }
 
@@ -184,17 +235,17 @@ impl Checker<'_, '_, '_> {
             }
         }
         let TypeId::Def(function) = ty else {
-            return self.error_for(syntax.0, Message::Call { ty });
+            return self.context.error_for(syntax.0, Message::Call { ty });
         };
         let TypeDef::Function(def) = &self.context.type_defs[function] else {
-            return self.error_for(syntax.0, Message::Call { ty });
+            return self.context.error_for(syntax.0, Message::Call { ty });
         };
         // fixme: to avoid lifetime errors. Should be cheap as it's only ids, but i'm sure theres
         //        a better option here.
         let def = def.clone();
 
         if def.parameters.len() != arg_types.len() {
-            self.error_for(
+            self.context.error_for(
                 syntax.0,
                 Message::ArgumentCount {
                     parameter_count: def.parameters.len(),
@@ -223,23 +274,76 @@ impl Checker<'_, '_, '_> {
         def.return_type
     }
 
-    // fn instantiate_signature(
-    //     generic_signature: SignatureDeclaration,
-    //     mapper: TypeMapper,
-    // ) -> InstantiatedSignatureDeclaration {
-    //     todo!()
-    // }
-    //
-    // fn instantiate_type(ty: TypeId, mapper: TypeMapper) -> TypeId {
-    //     todo!()
-    // }
-    //
-    // fn instantiate_symbol(
-    //     symbol: Symbol,
-    //     mapper: TypeMapper,
-    // ) -> InstantiatedSymbol {
-    //     todo!()
-    // }
+    fn instantiate_signature(&mut self, signature: &Signature, mapper: &TypeMapper) -> Signature {
+        Signature {
+            type_parameters: None,
+            parameters: signature
+                .parameters
+                .iter()
+                .copied()
+                .map(|id| self.instantiate_symbol(id, mapper))
+                .collect(),
+            return_type: self.instantiate_type(signature.return_type, mapper),
+        }
+    }
+
+    fn instantiate_type(&mut self, ty: TypeId, mapper: &TypeMapper) -> TypeId {
+        match ty {
+            TypeId::Def(id) => match &self.context.type_defs[id] {
+                TypeDef::Function(def) => {
+                    let def = def.clone();
+                    let signature = self.instantiate_signature(&def, mapper);
+                    self.context.define_type(TypeDef::Function(signature))
+                }
+                TypeDef::Object(def) => {
+                    let def = ObjectTypeDef {
+                        members: Table(
+                            def.members
+                                .0
+                                .clone()
+                                .into_iter()
+                                .map(|(name, def)| {
+                                    let symbol = self.instantiate_symbol(def.symbol, mapper);
+                                    let ty = self.value_type_of_symbol(symbol);
+                                    (name, MemberTypeDef { symbol, ty })
+                                })
+                                .collect(),
+                        ),
+                    };
+                    self.context.define_type(TypeDef::Object(def))
+                }
+                TypeDef::TypeVariable { .. } => {
+                    match mapper.sources.iter().position(|item| *item == ty) {
+                        Some(index) => mapper.targets[index],
+                        None => ty,
+                    }
+                }
+            },
+            ty => ty,
+        }
+    }
+
+    fn instantiate_symbol(&mut self, id: Id<Symbol>, mapper: &TypeMapper) -> Id<Symbol> {
+        let value_type = self.context.symbol_value_types.0.get(&id).copied();
+        let type_type = self.context.symbol_type_types.0.get(&id).copied();
+        let new_value_type = value_type.map(|ty| self.instantiate_type(ty, mapper));
+        let new_type_type = type_type.map(|ty| self.instantiate_type(ty, mapper));
+        if value_type != new_value_type || type_type != new_type_type {
+            // create a duplicate symbol so we can attach the mapped types
+            let symbol = self.context.symbols[id].clone();
+            let id = self.context.symbols.add(symbol);
+            if let Some(ty) = new_value_type {
+                self.context.symbol_value_types.0.insert(id, ty);
+            }
+            if let Some(ty) = new_type_type {
+                self.context.symbol_type_types.0.insert(id, ty);
+            }
+            id
+        } else {
+            id
+        }
+    }
+
     //
     // fn infer_type_arguments(
     //     type_parameters: Id<TypeDef>, // should all reference the TypeVariable variant?
@@ -272,7 +376,7 @@ impl Checker<'_, '_, '_> {
             },
             Ty::ObjectLiteralType(syntax) => self.object_literal_type(syntax),
             Ty::SignatureDeclaration(syntax) => {
-                let symbol = self.context.syntax_symbols[&syntax.0];
+                let symbol = self.context.syntax_symbols[syntax.0];
                 self.type_type_of_symbol(symbol)
             }
             Ty::Error => TypeId::Error,
@@ -280,13 +384,22 @@ impl Checker<'_, '_, '_> {
     }
 
     fn object_literal_type(&mut self, syntax: ObjectLiteralType) -> TypeId {
-        let id = self.context.syntax_symbols[&syntax.0];
-        let symbol = &self.context.symbols[id];
-        let members = symbol
-            .object_members
-            .expect("ObjectLiteralType should have members");
-        let ty = self.define_type(TypeDef::Object { members });
-        self.context.symbol_type_types.insert(id, ty);
+        let id = self.context.syntax_symbols[syntax.0];
+        let def = ObjectTypeDef {
+            members: Table(
+                self.context.symbol_members[id]
+                    .items
+                    .iter()
+                    .cloned()
+                    .map(|(name, symbol)| {
+                        let ty = self.value_type_of_symbol(symbol);
+                        (name, MemberTypeDef { symbol, ty })
+                    })
+                    .collect(),
+            ),
+        };
+        let ty = self.context.define_type(TypeDef::Object(def));
+        self.context.symbol_type_types.0.insert(id, ty);
         ty
     }
 
@@ -298,7 +411,7 @@ impl Checker<'_, '_, '_> {
         let decl = symbol
             .value_declaration()
             .expect("value type of symbol without value decl");
-        if let Some(&ty) = self.context.symbol_value_types.get(&id) {
+        if let Some(&ty) = self.context.symbol_value_types.0.get(&id) {
             return ty;
         }
         // todo: instantiated symbol? ("target" in symbol)
@@ -308,7 +421,7 @@ impl Checker<'_, '_, '_> {
             SyntaxData::TypeAlias { .. } => self.statement(TypeAlias(decl.syntax).into()),
             SyntaxData::Object { .. } => self.expression(Object(decl.syntax).into()),
             SyntaxData::PropertyInitializer { .. } => {
-                self.property(PropertyInitializer(decl.syntax))
+                self.property_initializer(PropertyInitializer(decl.syntax))
             }
             SyntaxData::PropertyDeclaration(data) => self.ty_opt(data.typename),
             SyntaxData::Parameter(ParameterData { typename, .. }) => self.ty_opt(*typename),
@@ -323,14 +436,14 @@ impl Checker<'_, '_, '_> {
     // not to be confused with function(), used by expression() etc.
     // to resolve the cached symbol type, which calls this.
     fn type_of_function(&mut self, syntax: Function) -> TypeId {
-        let id = self.context.syntax_symbols[&syntax.0];
+        let id = self.context.syntax_symbols[syntax.0];
         let data = &self.context.syntax[syntax];
         let type_parameters = data.type_parameters.as_ref().map(|tp| {
             tp.iter()
                 .copied()
                 .map(|p| {
                     // inlined type_parameter()
-                    let symbol = self.context.syntax_symbols[&p.0];
+                    let symbol = self.context.syntax_symbols[p.0];
                     self.type_type_of_symbol(symbol);
                     symbol
                 })
@@ -344,7 +457,7 @@ impl Checker<'_, '_, '_> {
                 // inlined check_parameter()
                 let data = &self.context.syntax[p];
                 self.ty_opt(data.typename);
-                self.context.syntax_symbols[&p.0]
+                self.context.syntax_symbols[p.0]
             })
             .collect();
         let declared_type = data.typename.map(|ty| self.ty(ty));
@@ -359,7 +472,7 @@ impl Checker<'_, '_, '_> {
             if let Statement::Return(syntax) = statement {
                 if let Some(declared_type) = declared_type {
                     if !self.is_assignable_to(statement_type, declared_type) {
-                        self.error_for(
+                        self.context.error_for(
                             syntax.0,
                             Message::ReturnType {
                                 return_type: statement_type,
@@ -380,21 +493,21 @@ impl Checker<'_, '_, '_> {
             TypeId::Void
         };
 
-        let ty = self.define_type(TypeDef::Function(FunctionTypeDef {
+        let ty = self.context.define_type(TypeDef::Function(Signature {
             type_parameters,
             parameters,
             return_type,
         }));
-        self.context.symbol_value_types.insert(id, ty);
+        self.context.symbol_value_types.0.insert(id, ty);
         ty
     }
 
     fn type_of_signature(&mut self, syntax: SignatureDeclaration) -> TypeId {
-        let locals = self.context.syntax_locals[&syntax.0];
+        let locals = self.context.syntax_locals[syntax.0];
         let mut checker = self.context.checker(locals);
         let data = &checker.context.syntax[syntax];
         for p in data.type_parameters.iter().flatten().copied() {
-            let symbol = checker.context.syntax_symbols[&p.0];
+            let symbol = checker.context.syntax_symbols[p.0];
             checker.type_type_of_symbol(symbol);
         }
         for p in data.parameters.iter().copied() {
@@ -403,40 +516,43 @@ impl Checker<'_, '_, '_> {
         }
         let type_parameters = data.type_parameters.as_ref().map(|tp| {
             tp.iter()
-                .map(|p| checker.context.syntax_symbols[&p.0])
+                .map(|p| checker.context.syntax_symbols[p.0])
                 .collect()
         });
         let parameters = data
             .parameters
             .iter()
-            .map(|p| checker.context.syntax_symbols[&p.0])
+            .map(|p| checker.context.syntax_symbols[p.0])
             .collect();
         let return_type = checker.ty_opt(data.typename);
-        let ty = checker.define_type(TypeDef::Function(FunctionTypeDef {
+        let ty = checker.context.define_type(TypeDef::Function(Signature {
             type_parameters,
             parameters,
             return_type,
         }));
-        let symbol = checker.context.syntax_symbols[&syntax.0];
-        checker.context.symbol_type_types.insert(symbol, ty);
+        let symbol = checker.context.syntax_symbols[syntax.0];
+        checker.context.symbol_type_types.0.insert(symbol, ty);
         ty
     }
 
     fn type_type_of_symbol(&mut self, id: Id<Symbol>) -> TypeId {
-        if let Some(&ty) = self.context.symbol_type_types.get(&id) {
+        if let Some(&ty) = self.context.symbol_type_types.0.get(&id) {
             return ty;
         }
         // todo instantiated symbols ("target" in symbol)
         let symbol = &self.context.symbols[id];
-        if let Some(decl) = symbol.type_declarations().next() {
+        let decl = symbol.type_declarations().copied().next();
+        if let Some(decl) = decl {
             let syntax = &self.context.syntax[decl.syntax];
             match &syntax.data {
                 SyntaxData::TypeAlias(data) => {
                     return self.ty(data.typename);
                 }
                 SyntaxData::TypeParameter(data) => {
-                    let ret = self.define_type(TypeDef::TypeVariable { name: data.name });
-                    self.context.symbol_type_types.insert(id, ret);
+                    let ret = self
+                        .context
+                        .define_type(TypeDef::TypeVariable { name: data.name });
+                    self.context.symbol_type_types.0.insert(id, ret);
                     return ret;
                 }
                 SyntaxData::SignatureDeclaration(_) => {
@@ -451,11 +567,7 @@ impl Checker<'_, '_, '_> {
     // implemented in crate::diag::WithContext: diag::Message contains ids
     // fn type_to_string(ty: TypeId) -> String
 
-    // fixme: Unlike centi-typescript, resolves in the current Checker::table context, instead
-    //        of chasing syntax parents. This means recursing into locals-providing syntax should
-    //        use a child Checker.
-    //
-    // Called from:
+    // In centi-typescript, this is called from (the equivalents of):
     // - identifier() (via expression() and ty())
     // - object_literal_type() - should just return from symbol.members
     // - object_literal() - should just return from symbol.members
@@ -465,7 +577,7 @@ impl Checker<'_, '_, '_> {
     // - Object, ObjectLiteralType: provides symbol.members
     //
     // This implies that Object and ObjectLiteralType shouldn't need to resolve at all, and simply
-    // return from their table in (the resolution of) [`Symbol::object_members`]?
+    // return from their members in [`CheckContext::`]
     //
     // Then this is only called by `identifier()` (for both values and types), so chasing the table
     // chain is correct, but only makes sense if we update [`Self::table`]
@@ -475,13 +587,13 @@ impl Checker<'_, '_, '_> {
             return TypeId::Error;
         };
 
-        let mut next_table = Some(self.table);
+        let mut next_scope = Some(self.scope);
 
-        while let Some(table) = next_table {
-            let table = &self.context.tables[table];
-            next_table = table.parent;
+        while let Some(scope) = next_scope {
+            let table = &self.context.scopes[scope];
+            next_scope = table.parent;
 
-            if let Some(&symbol) = table.symbols.get(text) {
+            if let Some(&symbol) = table.symbols.0.get(text) {
                 let declarations = &self.context.symbols[symbol].declarations;
                 if declarations.iter().any(|d| d.meaning == meaning) {
                     return match meaning {
@@ -492,7 +604,7 @@ impl Checker<'_, '_, '_> {
             }
         }
 
-        self.error_for(
+        self.context.error_for(
             name.0,
             Message::Resolve {
                 name: text.to_string(),
@@ -516,16 +628,16 @@ impl Checker<'_, '_, '_> {
                 let source = &self.context.type_defs[source];
                 let target = &self.context.type_defs[target];
                 match (source, target) {
-                    (TypeDef::Object { members: source }, TypeDef::Object { members: target }) => {
-                        let source = &self.context.tables[*source];
-                        let target = &self.context.tables[*target];
-
-                        for (key, &target_symbol) in &target.symbols {
-                            let assignable = match source.symbols.get(key) {
+                    (TypeDef::Object(source), TypeDef::Object(target)) => {
+                        // fixme: workaround lifetime error
+                        let source = source.clone();
+                        let target = target.clone();
+                        for (key, target_member) in &target.members.0 {
+                            let assignable = match source.members.0.get(key) {
                                 None => false,
-                                Some(&source_symbol) => {
-                                    let source_ty = self.value_type_of_symbol(source_symbol);
-                                    let target_ty = self.value_type_of_symbol(target_symbol);
+                                Some(source_member) => {
+                                    let source_ty = source_member.ty;
+                                    let target_ty = target_member.ty;
                                     self.is_assignable_to(source_ty, target_ty)
                                 }
                             };
@@ -538,7 +650,7 @@ impl Checker<'_, '_, '_> {
                     (TypeDef::Function(source), TypeDef::Function(target)) => {
                         // fixme: workaround lifetime error
                         let source = source.clone();
-                        let target = target.clone();
+                        let mut target = target.clone();
                         if let (Some(source_tp), Some(target_tp)) =
                             (&source.type_parameters, &target.type_parameters)
                         {
@@ -553,49 +665,22 @@ impl Checker<'_, '_, '_> {
                                 .map(|tp| self.type_type_of_symbol(tp))
                                 .collect();
                             let mapper = TypeMapper { sources, targets };
-                            todo!("instantiate signatures")
+                            target = self.instantiate_signature(&target, &mapper);
                         }
-                        if !self.is_assignable_to(source.return_type, target.return_type) {
-                            return false;
-                        }
-                        if source.parameters.len() <= target.parameters.len() {
-                            return false;
-                        }
-                        source
-                            .parameters
-                            .iter()
-                            .zip(target.parameters.iter())
-                            .all(|(sp, tp)| {
-                                let sp = self.value_type_of_symbol(*sp);
-                                let tp = self.value_type_of_symbol(*tp);
-                                self.is_assignable_to(tp, sp)
-                            })
+
+                        self.is_assignable_to(source.return_type, target.return_type)
+                            && source.parameters.len() <= target.parameters.len()
+                            && source.parameters.iter().zip(target.parameters.iter()).all(
+                                |(sp, tp)| {
+                                    let sp = self.value_type_of_symbol(*sp);
+                                    let tp = self.value_type_of_symbol(*tp);
+                                    self.is_assignable_to(tp, sp)
+                                },
+                            )
                     }
                     _ => false,
                 }
             }
         }
-    }
-
-    //----------
-    // added helpers (that should be moved to Context)
-
-    fn error(&mut self, span: SourceSpan, message: Message) -> TypeId {
-        self.context.reporter.error(span, message);
-        TypeId::Error
-    }
-
-    fn error_for(&mut self, syntax: Id<Syntax>, message: Message) -> TypeId {
-        let span = self.context.syntax.span(syntax);
-        self.error(span, message)
-    }
-
-    fn define_type(&mut self, type_def: TypeDef) -> TypeId {
-        TypeId::Def(self.context.type_defs.add(type_def))
-    }
-
-    fn syntax_symbol(&self, syntax: Id<Syntax>) -> &Symbol {
-        let id = self.context.syntax_symbols[&syntax];
-        &self.context.symbols[id]
     }
 }

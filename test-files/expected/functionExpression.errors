@@ -1,32 +1,21 @@
-functionExpression:3:31: error: declared type String does not match returned type Number
+functionExpression:3:31: error: declared type `string` does not match returned type `number`
    3 | var e = function (): string { return 1 }
      |                               ^^^^^^^^
-functionExpression:4:1: error: cannot assign Def(#0) to value of type Def(#2)
+functionExpression:4:1: error: cannot assign `(x: number) -> number` to value of type `() -> string`
    4 | e = f
      | ^^^^^
-functionExpression:6:1: error: cannot assign Def(#2) to value of type Def(#0)
+functionExpression:5:1: error: cannot assign `(x: <none>) -> any` to value of type `() -> string`
+   5 | e = g
+     | ^^^^^
+functionExpression:6:1: error: cannot assign `() -> string` to value of type `(x: number) -> number`
    6 | f = e
      | ^^^^^
-functionExpression:7:1: error: cannot assign Def(#2) to value of type Def(#1)
-   7 | g = e
-     | ^^^^^
-functionExpression:8:1: error: cannot assign Def(#3) to value of type Def(#2)
-   8 | e = function () {
-     | ^^^^^^^^^^^^^^^^^^
-  10 | }
-     | ^
-functionExpression:11:1: error: cannot assign Def(#4) to value of type Def(#2)
-  11 | e = function () { return 0 }
+functionExpression:9:1: error: cannot assign `() -> number` to value of type `() -> string`
+   9 | e = function () { return 0 }
      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-functionExpression:12:1: error: cannot assign Def(#5) to value of type Def(#0)
-  12 | f = function (y: number) { return 12 }
+functionExpression:11:1: error: cannot assign `(z: string) -> number` to value of type `(x: number) -> number`
+  11 | f = function (z: string) { return 13 }
      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-functionExpression:13:1: error: cannot assign Def(#6) to value of type Def(#0)
-  13 | f = function (z: string) { return 13 }
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-functionExpression:15:1: error: cannot assign Def(#0) to value of type Def(#7)
-  15 | h = f
-     | ^^^^^
-functionExpression:19:74: error: expected argument of type Number, but got String
-  19 | var misapply = function (f: (x: number) => number, x: string) { return f(x) }
+functionExpression:17:74: error: expected argument of type `number`, but got `string`
+  17 | var misapply = function (f: (x: number) => number, x: string) { return f(x) }
      |                                                                          ^

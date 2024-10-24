@@ -1,7 +1,7 @@
-callExpression:9:3: error: expected argument of type String, but got Number
+callExpression:9:3: error: expected argument of type `string`, but got `number`
    9 | f(1)
      |   ^
-callExpression:10:1: error: cannot call expression of type Number
+callExpression:10:1: error: cannot call expression of type `number`
   10 | n(1)
      | ^^^^
 callExpression:11:1: error: expected 1 arguments, but got 0

@@ -18,6 +18,8 @@ pub mod syntax;
 pub struct CompileResult {
     pub syntax: syntax::SyntaxList,
     pub module: syntax::Module,
+    pub bindings: bind::BindResult,
+    pub check: check::CheckResult,
     pub reports: Vec<diag::Report>,
 }
 
@@ -26,11 +28,13 @@ pub fn compile(source: &Source) -> CompileResult {
     let mut reporter = diag::Reporter::new(&mut reports);
     let parsed = parse(lex(&source), &mut reporter);
     let bindings = bind(&parsed, &mut reporter);
-    let _check_result = check(&parsed, &bindings, &mut reporter);
+    let check = check(&parsed, &bindings, &mut reporter);
     // no emit(transform(tree))
     CompileResult {
         module: parsed.module,
         syntax: parsed.syntax,
+        bindings,
+        check,
         reports,
     }
 }

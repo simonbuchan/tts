@@ -1,9 +1,9 @@
-objectLiteral:4:1: error: cannot assign Def(#6) to value of type Def(#5)
+objectLiteral:4:1: error: cannot assign `{ x: number }` to value of type `{ x: number, y: string }`
    4 | o = { x: 4 }
      | ^^^^^^^^^^^^
-objectLiteral:5:1: error: cannot assign Def(#8) to value of type Def(#7)
+objectLiteral:5:1: error: cannot assign `{ x: number, z: string }` to value of type `{ x: number, y: string }`
    5 | o = { x: 5, z: "hiiii" }
      | ^^^^^^^^^^^^^^^^^^^^^^^^
-objectLiteral:6:1: error: cannot assign Def(#10) to value of type Def(#9)
+objectLiteral:6:1: error: cannot assign `{ k: string }` to value of type `{ x: number, y: string }`
    6 | o = { k: "byeeee" }
      | ^^^^^^^^^^^^^^^^^^^

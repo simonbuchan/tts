@@ -1,7 +1,7 @@
-Module @ 0-1 {
+Module @ 1:1-1:2 (0-1) {
   statements: [
-    ExpressionStatement @ 0-1 {
-      expression: Identifier @ 0-1 = x
+    ExpressionStatement @ 1:1-1:2 (0-1) {
+      expression: Identifier @ 1:1-1:2 (0-1) = x
     }
   ]
 }
