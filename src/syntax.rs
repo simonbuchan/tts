@@ -1,3 +1,4 @@
+use crate::lex::TokenKind;
 use crate::list::{Id, List};
 use crate::source::{Source, SourcePos, SourceSpan};
 
@@ -105,21 +106,21 @@ macro_rules! syntax {
         #[derive(Copy, Clone)]
         pub enum $Group {
             $( $Alias ( $Alias ) ,)*
-            Error,
+            Error(Id<Syntax>),
         }
 
         impl $Group {
-            pub fn id(self) -> Option<Id<Syntax>> {
+            pub fn id(self) -> Id<Syntax> {
                 match self {
-                    $(Self::$Alias(syntax) => Some(syntax.0),)*
-                    Self::Error => None,
+                    $(Self::$Alias(syntax) => syntax.0,)*
+                    Self::Error(id) => id,
                 }
             }
 
             pub fn from_kind(id: Id<Syntax>, kind: SyntaxKind) -> Self {
                 match kind {
                     $(SyntaxKind::$Alias => Self::$Alias($Alias(id)),)*
-                    _ => Self::Error,
+                    _ => Self::Error(id),
                 }
             }
         }
@@ -136,7 +137,7 @@ macro_rules! syntax {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 match self {
                     $(Self::$Alias(inner) => inner.fmt(f),)*
-                    Self::Error => f.write_str("Error"),
+                    Self::Error(id) => f.debug_tuple("Error").field(id).finish(),
                 }
             }
         }
@@ -156,6 +157,7 @@ macro_rules! syntax {
 }
 
 syntax! {
+    Error: ErrorData,
     NumericLiteral: u64,
     StringLiteral: String,
     Identifier: Option<String>,
@@ -208,6 +210,11 @@ impl SyntaxTree for ObjectLiteralTypeData {
             access.item(p.0);
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct ErrorData {
+    pub token_kind: TokenKind,
 }
 
 #[derive(Clone, Debug)]
@@ -354,6 +361,16 @@ impl FmtData<'_, '_> {
         self.value_nested(parent, id)
     }
 
+    fn field_opt_nested(
+        &mut self,
+        name: &str,
+        parent: &TreeWriter<'_, '_>,
+        id: Option<Id<Syntax>>,
+    ) -> std::fmt::Result {
+        self.field_name(name)?;
+        self.value_opt_nested(parent, id)
+    }
+
     fn field_try_nested(
         &mut self,
         name: &str,
@@ -433,6 +450,18 @@ impl FmtData<'_, '_> {
         writeln!(self.f, "]")
     }
 
+    fn value_opt_nested(
+        &mut self,
+        parent: &TreeWriter<'_, '_>,
+        id: Option<Id<Syntax>>,
+    ) -> std::fmt::Result {
+        if let Some(id) = id {
+            self.value_nested(parent, id)
+        } else {
+            self.value_none()
+        }
+    }
+
     fn value_try_nested(
         &mut self,
         parent: &TreeWriter<'_, '_>,
@@ -487,11 +516,14 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
 
         // might be able to simplify this with a generic visitor? (probably not)
         match &syntax.data {
+            SyntaxData::Error(data) => {
+                writeln!(f, " = {:?}", data.token_kind)?;
+            }
             SyntaxData::Module(data) => {
                 fmt.open()?;
                 fmt.field_array_start("statements")?;
                 for statement in &data.statements {
-                    fmt.array_item_try_nested(self, statement.id())?;
+                    fmt.array_item_nested(self, statement.id())?;
                 }
                 fmt.value_array_end()?;
                 fmt.close()?;
@@ -512,25 +544,25 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
             SyntaxData::Assignment(data) => {
                 fmt.open()?;
                 fmt.field_nested("name", self, data.name.0)?;
-                fmt.field_try_nested("value", self, data.value.id())?;
+                fmt.field_nested("value", self, data.value.id())?;
                 fmt.close()?;
             }
             SyntaxData::ExpressionStatement(data) => {
                 fmt.open()?;
-                fmt.field_try_nested("expression", self, data.expression.id())?;
+                fmt.field_nested("expression", self, data.expression.id())?;
                 fmt.close()?;
             }
             SyntaxData::Var(data) => {
                 fmt.open()?;
                 fmt.field_nested("name", self, data.name.0)?;
-                fmt.field_opt_try_nested("typename", self, data.typename.map(|t| t.id()))?;
-                fmt.field_try_nested("initializer", self, data.initializer.id())?;
+                fmt.field_opt_nested("typename", self, data.typename.map(|t| t.id()))?;
+                fmt.field_nested("initializer", self, data.initializer.id())?;
                 fmt.close()?;
             }
             SyntaxData::TypeAlias(data) => {
                 fmt.open()?;
                 fmt.field_nested("name", self, data.name.0)?;
-                fmt.field_try_nested("typename", self, data.typename.id())?;
+                fmt.field_nested("typename", self, data.typename.id())?;
                 fmt.close()?;
             }
             SyntaxData::Object(data) => {
@@ -545,7 +577,7 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
             SyntaxData::PropertyInitializer(data) => {
                 fmt.open()?;
                 fmt.field_nested("name", self, data.name.0)?;
-                fmt.field_try_nested("initializer", self, data.initializer.id())?;
+                fmt.field_nested("initializer", self, data.initializer.id())?;
                 fmt.close()?;
             }
             SyntaxData::ObjectLiteralType(data) => {
@@ -560,7 +592,7 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
             SyntaxData::PropertyDeclaration(data) => {
                 fmt.open()?;
                 fmt.field_nested("name", self, data.name.0)?;
-                fmt.field_opt_try_nested("typename", self, data.typename.map(|t| t.id()))?;
+                fmt.field_opt_nested("typename", self, data.typename.map(|t| t.id()))?;
                 fmt.close()?;
             }
             SyntaxData::Function(data) => {
@@ -586,10 +618,10 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
                     fmt.array_item_nested(self, p.0)?
                 }
                 fmt.value_array_end()?;
-                fmt.field_opt_try_nested("typename", self, data.typename.map(|t| t.id()))?;
+                fmt.field_opt_nested("typename", self, data.typename.map(|t| t.id()))?;
                 fmt.field_array_start("body")?;
                 for s in data.body.iter().cloned() {
-                    fmt.array_item_try_nested(self, s.id())?
+                    fmt.array_item_nested(self, s.id())?
                 }
                 fmt.value_array_end()?;
                 fmt.close()?;
@@ -611,13 +643,13 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
                     fmt.array_item_nested(self, p.0)?
                 }
                 fmt.value_array_end()?;
-                fmt.field_opt_try_nested("typename", self, data.typename.map(|t| t.id()))?;
+                fmt.field_opt_nested("typename", self, data.typename.map(|t| t.id()))?;
                 fmt.close()?;
             }
             SyntaxData::Parameter(data) => {
                 fmt.open()?;
                 fmt.field_nested("name", self, data.name.0)?;
-                fmt.field_opt_try_nested("typename", self, data.typename.map(|t| t.id()))?;
+                fmt.field_opt_nested("typename", self, data.typename.map(|t| t.id()))?;
                 fmt.close()?;
             }
             SyntaxData::TypeParameter(data) => {
@@ -627,17 +659,17 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
             }
             SyntaxData::Return(data) => {
                 fmt.open()?;
-                fmt.field_try_nested("expression", self, data.expression.id())?;
+                fmt.field_nested("expression", self, data.expression.id())?;
                 fmt.close()?;
             }
             SyntaxData::Call(data) => {
                 fmt.open()?;
-                fmt.field_try_nested("expression", self, data.expression.id())?;
+                fmt.field_nested("expression", self, data.expression.id())?;
                 fmt.field_name("type_arguments")?;
                 if let Some(tas) = &data.type_arguments {
                     fmt.value_array_start()?;
                     for ta in tas.iter().copied() {
-                        fmt.array_item_try_nested(self, ta.id())?
+                        fmt.array_item_nested(self, ta.id())?
                     }
                     fmt.value_array_end()?;
                 } else {
@@ -645,7 +677,7 @@ impl std::fmt::Display for TreeWriter<'_, '_> {
                 }
                 fmt.field_array_start("arguments")?;
                 for a in data.arguments.iter().copied() {
-                    fmt.array_item_try_nested(self, a.id())?;
+                    fmt.array_item_nested(self, a.id())?;
                 }
                 fmt.value_array_end()?;
                 fmt.close()?;

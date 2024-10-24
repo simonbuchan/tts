@@ -37,7 +37,7 @@ pub struct Signature {
     pub return_type: TypeId,
 }
 
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Copy, Clone, Hash, Ord, PartialOrd, Eq, PartialEq)]
 pub enum TypeId {
     Void,
     Error,
@@ -61,6 +61,7 @@ pub fn check(
         symbol_members: &bindings.symbol_members,
         type_defs: Default::default(),
 
+        instantiated_symbols: Default::default(),
         symbol_value_types: Default::default(),
         symbol_type_types: Default::default(),
 
@@ -80,9 +81,17 @@ pub fn check(
     }
 }
 
+#[derive(Clone)]
 struct TypeMapper {
     sources: Vec<TypeId>,
     targets: Vec<TypeId>,
+}
+
+// InstantiatedSymbol without the Symbol parts
+#[derive(Clone)]
+struct SymbolInstance {
+    target: Id<Symbol>,
+    mapper: TypeMapper,
 }
 
 struct CheckContext<'a, 'reports> {
@@ -98,6 +107,7 @@ struct CheckContext<'a, 'reports> {
     // output:
     // CheckResult
     type_defs: List<TypeDef>,
+    instantiated_symbols: Table<Id<Symbol>, SymbolInstance>,
     symbol_value_types: Table<Id<Symbol>, TypeId>,
     symbol_type_types: Table<Id<Symbol>, TypeId>,
 
@@ -157,7 +167,7 @@ impl Checker<'_, '_, '_> {
                 let data = &self.context.syntax[syntax];
                 self.expression(data.expression)
             }
-            Statement::Error => TypeId::Error,
+            Statement::Error { .. } => TypeId::Error,
         }
     }
 
@@ -179,7 +189,7 @@ impl Checker<'_, '_, '_> {
             Expression::Object(syntax) => self.object(syntax),
             Expression::Function(syntax) => self.function(syntax),
             Expression::Call(syntax) => self.call(syntax),
-            Expression::Error => TypeId::Error,
+            Expression::Error { .. } => TypeId::Error,
         }
     }
 
@@ -223,17 +233,6 @@ impl Checker<'_, '_, '_> {
     fn call(&mut self, syntax: Call) -> TypeId {
         let data = &self.context.syntax[syntax];
         let ty = self.expression(data.expression);
-        if data.type_arguments.is_some() {
-            // todo
-            return TypeId::Error;
-        }
-
-        let mut arg_types = vec![];
-        for arg in data.arguments.iter().copied() {
-            if let Some(id) = arg.id() {
-                arg_types.push((id, self.expression(arg)));
-            }
-        }
         let TypeId::Def(function) = ty else {
             return self.context.error_for(syntax.0, Message::Call { ty });
         };
@@ -242,7 +241,77 @@ impl Checker<'_, '_, '_> {
         };
         // fixme: to avoid lifetime errors. Should be cheap as it's only ids, but i'm sure theres
         //        a better option here.
-        let def = def.clone();
+        let mut def = def.clone();
+
+        let mut arg_types = vec![];
+        for arg in data.arguments.iter().copied() {
+            arg_types.push(self.expression(arg));
+        }
+
+        if let Some(type_parameters) = &def.type_parameters {
+            let type_parameters = type_parameters
+                .iter()
+                .copied()
+                .map(|p| self.type_type_of_symbol(p))
+                .collect::<Vec<_>>();
+
+            let type_arguments = match &data.type_arguments {
+                None => {
+                    let ta = self.infer_type_arguments(&type_parameters, &def, &arg_types);
+                    assert_eq!(
+                        type_parameters.len(),
+                        ta.len(),
+                        "infered type arguments result length did not match type parameters length",
+                    );
+                    ta
+                }
+                Some(type_arguments) if type_parameters.len() == type_arguments.len() => {
+                    let ta = type_arguments
+                        .iter()
+                        .map(|&ty| self.ty(ty))
+                        .collect::<Vec<_>>();
+                    assert_eq!(
+                        type_parameters.len(),
+                        ta.len(),
+                        "explicit type arguments should have matched after map",
+                    );
+                    ta
+                }
+                Some(type_arguments) => {
+                    self.context.error_for(
+                        data.expression.id(),
+                        Message::TypeArgumentCount {
+                            argument_count: type_arguments.len(),
+                            parameter_count: type_parameters.len(),
+                        },
+                    );
+                    let ta = type_parameters
+                        .iter()
+                        .map(|_| TypeId::Any)
+                        .collect::<Vec<_>>();
+                    assert_eq!(
+                        type_parameters.len(),
+                        ta.len(),
+                        "explicit type arguments fallback did not match",
+                    );
+                    ta
+                }
+            };
+
+            assert_eq!(
+                type_parameters.len(),
+                type_arguments.len(),
+                "resolved type arguments and type parameters length did not match ",
+            );
+
+            def = self.instantiate_signature(
+                &def,
+                &TypeMapper {
+                    sources: type_parameters,
+                    targets: type_arguments,
+                },
+            );
+        }
 
         if def.parameters.len() != arg_types.len() {
             self.context.error_for(
@@ -253,14 +322,16 @@ impl Checker<'_, '_, '_> {
                 },
             );
         }
-        for ((arg, ty), param) in arg_types
+        for ((arg, ty), param) in data
+            .arguments
             .iter()
             .copied()
+            .zip(arg_types.iter().copied())
             .zip(def.parameters.iter().copied())
         {
             let parameter_type = self.value_type_of_symbol(param);
             if !self.is_assignable_to(ty, parameter_type) {
-                let span = self.context.syntax.span(arg);
+                let span = self.context.syntax.span(arg.id());
                 self.context.reporter.error(
                     span,
                     Message::Argument {
@@ -331,27 +402,106 @@ impl Checker<'_, '_, '_> {
         if value_type != new_value_type || type_type != new_type_type {
             // create a duplicate symbol so we can attach the mapped types
             let symbol = self.context.symbols[id].clone();
-            let id = self.context.symbols.add(symbol);
+            let new_id = self.context.symbols.add(symbol);
+            self.context.instantiated_symbols.0.insert(
+                new_id,
+                SymbolInstance {
+                    target: id,
+                    mapper: mapper.clone(),
+                },
+            );
             if let Some(ty) = new_value_type {
-                self.context.symbol_value_types.0.insert(id, ty);
+                self.context.symbol_value_types.0.insert(new_id, ty);
             }
             if let Some(ty) = new_type_type {
-                self.context.symbol_type_types.0.insert(id, ty);
+                self.context.symbol_type_types.0.insert(new_id, ty);
             }
-            id
+            new_id
         } else {
             id
         }
     }
 
-    //
-    // fn infer_type_arguments(
-    //     type_parameters: Id<TypeDef>, // should all reference the TypeVariable variant?
-    //     signature: SignatureDeclaration,
-    //     arg_types: Vec<TypeId>,
-    // ) -> Vec<TypeId> {
-    //     todo!()
-    // }
+    fn infer_type_arguments(
+        &mut self,
+        type_parameters: &[TypeId], // should all be defs for a TypeParameter
+        signature: &Signature,
+        arg_types: &[TypeId],
+    ) -> Vec<TypeId> {
+        struct Inferences<'checker, 'context, 'a, 'reports> {
+            checker: &'checker mut Checker<'context, 'a, 'reports>,
+            output: Table<TypeId, Vec<TypeId>>,
+        }
+
+        let mut inferences = Inferences {
+            checker: self,
+            output: Default::default(),
+        };
+
+        for type_parameter in type_parameters.iter().copied() {
+            inferences.output.0.insert(type_parameter, vec![]);
+        }
+
+        for (arg_type, parameter) in arg_types
+            .iter()
+            .copied()
+            .zip(signature.parameters.iter().copied())
+        {
+            let ty = inferences.checker.value_type_of_symbol(parameter);
+            inferences.ty(arg_type, ty);
+        }
+
+        // todo: check for dupes, union...
+        return type_parameters
+            .iter()
+            .map(|ty| {
+                // error report of it fails to infer?
+                inferences.output.0[ty]
+                    .first()
+                    .copied()
+                    .unwrap_or(TypeId::Any)
+            })
+            .collect();
+
+        impl Inferences<'_, '_, '_, '_> {
+            fn ty(&mut self, source: TypeId, target: TypeId) {
+                let TypeId::Def(source_def) = source else {
+                    return;
+                };
+                let TypeId::Def(target_def) = target else {
+                    return;
+                };
+                let source_def = &self.checker.context.type_defs[source_def];
+                let target_def = &self.checker.context.type_defs[target_def];
+                match (source_def, target_def) {
+                    (TypeDef::Function(source), TypeDef::Function(target)) => {
+                        // fixme: lifetime workaround
+                        let source = source.clone();
+                        let target = target.clone();
+                        if let (Some(source_type_parameters), Some(target_type_parameters)) =
+                            (&source.type_parameters, &target.type_parameters)
+                        {
+                            self.symbols(source_type_parameters, target_type_parameters);
+                        }
+                        self.symbols(&source.parameters, &target.parameters);
+                        self.ty(source.return_type, target.return_type);
+                    }
+                    (_, TypeDef::TypeVariable { .. }) => {
+                        self.output[target].push(source);
+                    }
+                    _ => {}
+                }
+            }
+
+            fn symbols(&mut self, sources: &[Id<Symbol>], targets: &[Id<Symbol>]) {
+                for (source, target) in sources.iter().copied().zip(targets.iter().copied()) {
+                    let source = self.checker.value_type_of_symbol(source);
+                    let target = self.checker.value_type_of_symbol(target);
+                    self.ty(source, target)
+                }
+            }
+        }
+    }
 
     // inlined
     // fn parameter(syntax: Parameter) -> TypeId;
@@ -379,7 +529,7 @@ impl Checker<'_, '_, '_> {
                 let symbol = self.context.syntax_symbols[syntax.0];
                 self.type_type_of_symbol(symbol)
             }
-            Ty::Error => TypeId::Error,
+            Ty::Error { .. } => TypeId::Error,
         }
     }
 
@@ -414,7 +564,13 @@ impl Checker<'_, '_, '_> {
         if let Some(&ty) = self.context.symbol_value_types.0.get(&id) {
             return ty;
         }
-        // todo: instantiated symbol? ("target" in symbol)
+        // if ('target' in symbol)
+        // Ugly clone for lifetimes again...
+        if let Some(instance) = self.context.instantiated_symbols.0.get(&id).cloned() {
+            let ty = self.value_type_of_symbol(instance.target);
+            return self.instantiate_type(ty, &instance.mapper);
+        }
+
         let syntax = &self.context.syntax[decl.syntax];
         match &syntax.data {
             SyntaxData::Var { .. } => self.statement(Var(decl.syntax).into()),
@@ -539,7 +695,12 @@ impl Checker<'_, '_, '_> {
         if let Some(&ty) = self.context.symbol_type_types.0.get(&id) {
             return ty;
         }
-        // todo instantiated symbols ("target" in symbol)
+        // if ('target' in symbol)
+        // Ugly clone for lifetimes again...
+        if let Some(instance) = self.context.instantiated_symbols.0.get(&id).cloned() {
+            let ty = self.type_type_of_symbol(instance.target);
+            return self.instantiate_type(ty, &instance.mapper);
+        }
         let symbol = &self.context.symbols[id];
         let decl = symbol.type_declarations().copied().next();
         if let Some(decl) = decl {

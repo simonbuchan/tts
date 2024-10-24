@@ -145,13 +145,18 @@ impl Parser<'_, '_, '_> {
                 }
             }
             _ => {
+                let token_kind = self.lexer.kind;
+                // make progress
+                self.lexer.scan();
+                let data = ErrorData { token_kind };
+                let id = self.syntax::<Error>(span.start, data);
                 self.error(
                     span,
                     Message::Expected {
                         expected: "expression",
                     },
                 );
-                Expression::Error
+                Expression::Error(id.0)
             }
         }
     }
@@ -227,10 +232,13 @@ impl Parser<'_, '_, '_> {
                 Ty::SignatureDeclaration(self.syntax(span.start, data))
             }
             TokenKind::Identifier => Ty::Identifier(self.identifier()),
-            _ => {
+            token_kind => {
+                // make progress
                 self.lexer.scan();
+                let data = ErrorData { token_kind };
+                let id = self.syntax::<Error>(span.start, data);
                 self.error(span, Message::Expected { expected: "type" });
-                Ty::Error
+                Ty::Error(id.0)
             }
         }
     }

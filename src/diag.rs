@@ -130,6 +130,11 @@ pub enum Message {
         parameter_type: TypeId,
         argument_type: TypeId,
     },
+    /// `"expected {parameter_count} type arguments, but got {argument_count}"`
+    TypeArgumentCount {
+        parameter_count: usize,
+        argument_count: usize,
+    },
 }
 
 struct IndentWrite<W> {
@@ -324,6 +329,15 @@ impl fmt::Display for WithContext<'_, '_, &Message> {
                     "expected argument of type `{parameter_type}`, but got `{argument_type}`",
                     parameter_type = self.map(*parameter_type),
                     argument_type = self.map(*argument_type),
+                )
+            }
+            Message::TypeArgumentCount {
+                parameter_count,
+                argument_count,
+            } => {
+                write!(
+                    f,
+                    "expected {parameter_count} type arguments, but got {argument_count}"
                 )
             }
         }

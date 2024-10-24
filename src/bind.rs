@@ -259,7 +259,7 @@ impl<'context, 'a, 'reports> Binder<'context, 'a, 'reports> {
                 let data = &self.context.syntax[id];
                 self.expression(data.expression);
             }
-            Statement::Error => {}
+            Statement::Error { .. } => {}
         }
     }
 
@@ -321,7 +321,7 @@ impl<'context, 'a, 'reports> Binder<'context, 'a, 'reports> {
                     self.expression(arg);
                 }
             }
-            Expression::Error => {}
+            Expression::Error { .. } => {}
         }
     }
 
@@ -370,7 +370,7 @@ impl<'context, 'a, 'reports> Binder<'context, 'a, 'reports> {
                     binder.ty(ty);
                 }
             }
-            Ty::Error => {}
+            Ty::Error { .. } => {}
         }
     }
 }
